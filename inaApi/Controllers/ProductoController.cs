@@ -23,7 +23,7 @@ namespace inaApp.Api.Controllers
         public ActionResult Index()
         {
             _productoService.ObtenerTodosAsync();
-            return Ok(" Test Correcto");
+            return Ok(" Test Correcto - ProductoController.Index.ObtenerTodosAsync");
         }
 
         // GET: ProductoController/Details/5

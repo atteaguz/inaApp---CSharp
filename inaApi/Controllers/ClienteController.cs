@@ -21,7 +21,8 @@ namespace inaApp.Api.Controllers
         [HttpGet]
         public ActionResult Index()
         {
-            return Ok(" Test Correcto");
+            _clienteService.ObtenerTodosAsync();
+            return Ok(" Test Correcto - ClienteController.Index.ObtenerTodosAsync");
         }
 
         // GET: ClienteController/Details/5

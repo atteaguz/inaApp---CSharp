@@ -8,6 +8,13 @@ namespace inaApp.Services
 {
     public class ClienteService : IClienteService
     {
+        //inyeccion de ClienteRepository
+        private readonly IClienteRepository _clienteRepo;
+        public ClienteService(IClienteRepository clienteRepo)
+        {
+            _clienteRepo = clienteRepo;
+        }
+
         public Task<Cliente> ActualizarAsync(Cliente cliente)
         {
             throw new NotImplementedException();
@@ -30,7 +37,8 @@ namespace inaApp.Services
 
         public Task<List<Cliente>> ObtenerTodosAsync()
         {
-            throw new NotImplementedException();
+            _clienteRepo.ObtenerTodosAsync();
+            return null;
         }
     }
 }

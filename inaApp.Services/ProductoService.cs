@@ -8,7 +8,7 @@ namespace inaApp.Services
 {
     public class ProductoService : IProductoService
     {
-
+        //inyeccion de ProductoRepository
         private readonly IProductoRepository _productoRepo;
 
         public ProductoService(IProductoRepository productoRepo)
