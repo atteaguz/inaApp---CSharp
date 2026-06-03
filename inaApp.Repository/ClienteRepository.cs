@@ -4,7 +4,7 @@ using System.Text;
 
 namespace inaApp.Repository
 {
-    internal class ClienteRepository
+    public class ClienteRepository
     {
     }
 }

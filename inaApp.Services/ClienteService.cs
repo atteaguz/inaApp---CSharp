@@ -4,7 +4,7 @@ using System.Text;
 
 namespace inaApp.Services
 {
-    internal class ClienteService
+    public class ClienteService
     {
     }
 }

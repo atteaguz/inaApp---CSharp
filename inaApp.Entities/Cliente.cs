@@ -4,7 +4,7 @@ using System.Text;
 
 namespace inaApp.Entities
 {
-    internal class Cliente
+    public class Cliente
     {
         //propiedades de clientes
         public int Id { get; set; }

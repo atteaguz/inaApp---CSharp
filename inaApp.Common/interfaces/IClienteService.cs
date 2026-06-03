@@ -1,10 +1,16 @@
-﻿using System;
+﻿using inaApp.Entities;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace inaApp.Common.interfaces
 {
-    internal interface IClienteService
+    public interface IClienteService
     {
+        Task<List<Cliente>> ObtenerTodosAsync();
+        Task<List<Cliente>> ObtenerPorIdsAsync(int id);
+        Task<Cliente> CrearAsync(Cliente cliente);
+        Task<Cliente> ActualizarAsync(Cliente cliente);
+        Task<bool> EliminarAsync(int id);
     }
 }
