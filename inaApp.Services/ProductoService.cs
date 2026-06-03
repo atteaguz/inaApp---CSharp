@@ -15,7 +15,6 @@ namespace inaApp.Services
         {
             _productoRepo = productoRepo;
         }
-
         public Task<List<Producto>> ObtenerTodosAsync()
         {
             _productoRepo.ObtenerTodosAsync();
