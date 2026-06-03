@@ -1,14 +1,27 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using inaApp.Common.interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace inaApp.Api.Controllers
 {
+    [ApiController]
+    [Route("api/cliente")]
     public class ClienteController : Controller
     {
+
+        //inyeccion de ClienteService
+        private readonly IClienteService _clienteService;
+
+        public ClienteController(IClienteService clienteServ)
+        {
+            _clienteService = clienteServ;
+        }
+
         // GET: ClienteController
+        [HttpGet]
         public ActionResult Index()
         {
-            return View();
+            return Ok(" Test Correcto");
         }
 
         // GET: ClienteController/Details/5
