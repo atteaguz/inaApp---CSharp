@@ -1,3 +1,4 @@
+using inaApp.Api.Extensions;
 using inaApp.Common.interfaces;
 using inaApp.Repository;
 using inaApp.Services;
@@ -5,12 +6,9 @@ using inaApp.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-builder.Services.AddScoped<IProductoService, ProductoService>();
-builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
-builder.Services.AddScoped<IClienteService, ClienteService>();
-builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddAplicationServices(builder.Configuration);
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 

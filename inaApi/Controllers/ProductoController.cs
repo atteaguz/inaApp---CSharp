@@ -19,7 +19,7 @@ namespace inaApp.Api.Controllers
         // GET: ProductoController
 
         //obtener todos los productos
-        [HttpGet]
+        [HttpGet("getall")]
         public ActionResult Index()
         {
             _productoService.ObtenerTodosAsync();
@@ -27,6 +27,7 @@ namespace inaApp.Api.Controllers
         }
 
         // GET: ProductoController/Details/5
+        [HttpGet("getbyid/{id}")]
         public ActionResult Details(int id)
         {
             return View();
