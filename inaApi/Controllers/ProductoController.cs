@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace inaApp.Api.Controllers
 {
     [ApiController]
-    [Route("api/producto")]
+    [Route("api/[controller]")]
     public class ProductoController : Controller
     {
         private readonly IProductoService _productoService;
