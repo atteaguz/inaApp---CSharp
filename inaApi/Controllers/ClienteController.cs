@@ -18,7 +18,7 @@ namespace inaApp.Api.Controllers
         }
 
         // GET: ClienteController
-        [HttpGet]
+        [HttpGet("getall")]
         public ActionResult Index()
         {
             _clienteService.ObtenerTodosAsync();
@@ -26,6 +26,7 @@ namespace inaApp.Api.Controllers
         }
 
         // GET: ClienteController/Details/5
+        [HttpGet("getbyid/{id}")]
         public ActionResult Details(int id)
         {
             return View();
