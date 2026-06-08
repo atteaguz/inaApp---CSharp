@@ -36,9 +36,9 @@ namespace inaApp.Services
             throw new NotImplementedException();
         }
 
-        public Task<List<Producto>> ObtenerTodosAsync()
+        public async Task<List<Producto>> ObtenerTodosAsync()
         {
-            throw new NotImplementedException();
+            return await _productoRepo.ObtenerTodosAsync();
         }
     }
 }

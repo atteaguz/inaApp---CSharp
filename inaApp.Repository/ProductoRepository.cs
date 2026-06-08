@@ -2,12 +2,22 @@
 using System.Collections.Generic;
 using System.Text;
 using inaApp.Common.interfaces;
+using inaApp.Data;
 using inaApp.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace inaApp.Repository
 {
     public class ProductoRepository : IGenericRepository<Producto>
     {
+
+        private readonly ApplicationDbContext _context;
+
+        public ProductoRepository(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
         public Task<Producto> ActualizarAsync(Producto entity)
         {
             throw new NotImplementedException();
@@ -28,9 +38,25 @@ namespace inaApp.Repository
             throw new NotImplementedException();
         }
 
-        public Task<List<Producto>> ObtenerTodosAsync()
+        public async Task<List<Producto>> ObtenerTodosAsync()
         {
-            throw new NotImplementedException();
+            try
+            {
+                return await _context.Producto.Where(p => p.Estado == true).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+
+
+
+
+
+
+
         }
     }
 }

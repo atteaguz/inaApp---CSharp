@@ -21,10 +21,10 @@ namespace inaApp.Api.Controllers
 
         //obtener todos los productos
         [HttpGet("getall")]
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            _productoService.ObtenerTodosAsync();
-            return Ok(" Test Correcto - ProductoController.Index.ObtenerTodosAsync");
+            var lista = await _productoService.ObtenerTodosAsync();
+            return Ok(lista);
         }
 
         // GET: ProductoController/Details/5
