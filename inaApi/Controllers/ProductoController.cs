@@ -38,13 +38,23 @@ namespace inaApp.Api.Controllers
             }
         }
 
-        // GET: ProductoController/Details/5
+        //obtener un producto por id
         [HttpGet("getbyid/{id}")]
-        public ActionResult Details(int id)
+        public async Task<ActionResult> Details(int id)
         {
-            return View();
+            try
+            {
+                var producto = await _productoService.ObtenerPorIdsAsync(id);
+                if (producto == null){return NotFound("Producto no encontrado");}
+                return Ok(producto);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor. Contacte con el administrador");
+            }
         }
 
+        //crear un nuevo producto
         [HttpPost]
         public async Task<ActionResult> Create([FromBody] Producto producto)
         {
@@ -59,12 +69,22 @@ namespace inaApp.Api.Controllers
             }
         }
 
-        // GET: ProductoController/Edit/5
-        public ActionResult Edit(int id)
+        //modificar un producto existente
+        [HttpPatch("update/{id}")]
+        public async Task<ActionResult> Edit(int id, [FromBody] Producto producto)
         {
-            return View();
+            try
+            {
+                var result = await _productoService.ActualizarAsync(producto);
+                return Ok(result);
+            }
+            catch (Exception)
+            {
+                return BadRequest("Error al actualizar el producto. Contacte al administrador");
+            }
         }
 
+        //eliminar un producto - borrado logico
         [HttpDelete("delete/{id}")]
         public async Task<ActionResult> Delete(int id)
         {

@@ -18,14 +18,21 @@ namespace inaApp.Repository
             _context = context;
         }
 
+        //metodo para actualizar un producto existente
         public async Task<Producto> ActualizarAsync(Producto entity)
         {
-
             try
             {
-                _context.Producto.Update(entity);
+                var producto = await ObtenerPorIdsAsync(entity.Id);
+                if (producto == null) return null;
+                //actualizar los campos del producto
+                producto.Nombre = entity.Nombre;
+                producto.Precio = entity.Precio;
+                producto.Descripcion = entity.Descripcion;
+                producto.Stock = entity.Stock;
+                _context.Producto.Update(producto);
                 await _context.SaveChangesAsync();
-                return entity;
+                return producto;
             }
             catch (Exception ex)
             {
