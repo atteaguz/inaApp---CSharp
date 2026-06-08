@@ -16,9 +16,10 @@ namespace inaApp.Services
             _productoRepo = productoRepo;
         }
 
-        public Task<Producto> ActualizarAsync(Producto entity)
+        public async Task<Producto> ActualizarAsync(Producto entity)
         {
-            throw new NotImplementedException();
+            //reglas de negocio
+            return await _productoRepo.ActualizarAsync(entity);
         }
 
         public async Task<Producto> CrearAsync(Producto entity)
@@ -33,13 +34,15 @@ namespace inaApp.Services
             return await _productoRepo.EliminarAsync(id);
         }
 
-        public Task<List<Producto>> ObtenerPorIdsAsync(int id)
+        public async Task<Producto> ObtenerPorIdsAsync(int id)
         {
-            throw new NotImplementedException();
+            //reglas de negocio
+            return await _productoRepo.ObtenerPorIdsAsync(id);
         }
 
         public async Task<List<Producto>> ObtenerTodosAsync()
         {
+            //reglas de negocio
             return await _productoRepo.ObtenerTodosAsync();
         }
     }

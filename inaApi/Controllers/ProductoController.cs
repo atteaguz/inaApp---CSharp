@@ -17,19 +17,25 @@ namespace inaApp.Api.Controllers
             _productoService = productoServ;
         }
 
-        // GET: ProductoController
-
         //obtener todos los productos
         [HttpGet("getall")]
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> IndexAsync()
         {
-            var lista = await _productoService.ObtenerTodosAsync();
+            try
+            {
+                var lista = await _productoService.ObtenerTodosAsync();
 
-            if (lista.Count == 0) {
-                return NotFound("No hay datos disponibles");
+                if (lista.Count == 0) {
+                    return NotFound("No hay datos disponibles");
+                }
+
+                return Ok(lista);
             }
+            catch (Exception)
+            {
 
-            return Ok(lista);
+                return StatusCode(500, "Error interno del servidor. Contacte con el administrador");
+            }
         }
 
         // GET: ProductoController/Details/5
@@ -59,21 +65,6 @@ namespace inaApp.Api.Controllers
             return View();
         }
 
-        // POST: ProductoController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
         [HttpDelete("delete/{id}")]
         public async Task<ActionResult> Delete(int id)
         {
@@ -84,12 +75,10 @@ namespace inaApp.Api.Controllers
                 var result = await _productoService.EliminarAsync(id);
                 return result ? Ok("Producto eliminado") : BadRequest("Error al eliminar el producto");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return StatusCode(500, "Error interno del servidor. Contacte con el administrador");
             }
-            
         }
     }
 }

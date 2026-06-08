@@ -9,7 +9,7 @@ namespace inaApp.Common.interfaces
     public interface IGenericService <E>
     {
         Task<List<E>> ObtenerTodosAsync();
-        Task<List<E>> ObtenerPorIdsAsync(int id);
+        Task<E> ObtenerPorIdsAsync(int id);
         Task<E> CrearAsync(E entity);
         Task<E> ActualizarAsync(E entity);
         Task<bool> EliminarAsync(int id);
