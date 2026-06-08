@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="Data/inaApp.Data.csproj" Id="f1bdc042-2141-43d4-b210-6c204f8bd8a7" />
   <Project Path="inaApi/inaApp.Api.csproj" />
   <Project Path="inaApp.Common/inaApp.Common.csproj" />
   <Project Path="inaApp.Entities/inaApp.Entities.csproj" />

@@ -1,4 +1,5 @@
 ﻿using inaApp.Common.interfaces;
+using inaApp.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,10 +9,10 @@ namespace inaApp.Api.Controllers
     [Route("api/[controller]")]
     public class ProductoController : Controller
     {
-        private readonly IProductoService _productoService;
+        private readonly IGenericService<Producto> _productoService;
 
         //inyectar el servicio en el controlador
-        public ProductoController(IProductoService productoServ)
+        public ProductoController(IGenericService<Producto> productoServ)
         {
             _productoService = productoServ;
         }

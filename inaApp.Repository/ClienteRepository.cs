@@ -6,7 +6,7 @@ using System.Text;
 
 namespace inaApp.Repository
 {
-    public class ClienteRepository : IClienteRepository
+    public class ClienteRepository : IGenericRepository<Cliente>
     {
         public Task<Cliente> ActualizarAsync(Cliente cliente)
         {

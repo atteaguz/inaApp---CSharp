@@ -1,4 +1,5 @@
 ﻿using inaApp.Common.interfaces;
+using inaApp.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,9 +11,9 @@ namespace inaApp.Api.Controllers
     {
 
         //inyeccion de ClienteService
-        private readonly IClienteService _clienteService;
+        private readonly IGenericService<Cliente> _clienteService;
 
-        public ClienteController(IClienteService clienteServ)
+        public ClienteController(IGenericService<Cliente> clienteServ)
         {
             _clienteService = clienteServ;
         }

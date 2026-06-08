@@ -6,11 +6,11 @@ using System.Text;
 
 namespace inaApp.Services
 {
-    public class ClienteService : IClienteService
+    public class ClienteService : IGenericService<Cliente>
     {
         //inyeccion de ClienteRepository
-        private readonly IClienteRepository _clienteRepo;
-        public ClienteService(IClienteRepository clienteRepo)
+        private readonly IGenericRepository<Cliente> _clienteRepo;
+        public ClienteService(IGenericRepository<Cliente> clienteRepo)
         {
             _clienteRepo = clienteRepo;
         }
