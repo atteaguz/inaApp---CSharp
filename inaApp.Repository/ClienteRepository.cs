@@ -23,7 +23,7 @@ namespace inaApp.Repository
             throw new NotImplementedException();
         }
 
-        public Task<List<Cliente>> ObtenerPorIdsAsync(int id)
+        public Task<Cliente> ObtenerPorIdsAsync(int id)
         {
             throw new NotImplementedException();
         }

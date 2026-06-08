@@ -18,24 +18,74 @@ namespace inaApp.Repository
             _context = context;
         }
 
-        public Task<Producto> ActualizarAsync(Producto entity)
+        public async Task<Producto> ActualizarAsync(Producto entity)
         {
-            throw new NotImplementedException();
+
+            try
+            {
+                _context.Producto.Update(entity);
+                await _context.SaveChangesAsync();
+                return entity;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
         }
 
-        public Task<Producto> CrearAsync(Producto entity)
+        public async Task<Producto> CrearAsync(Producto entity)
         {
-            throw new NotImplementedException();
+            try
+            {
+                await _context.Producto.AddAsync(entity);
+                await _context.SaveChangesAsync();
+                return entity;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
         }
 
-        public Task<bool> EliminarAsync(int id)
+        public async Task<bool> EliminarAsync(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var producto = await ObtenerPorIdsAsync(id);
+                if (producto == null) return false;
+
+                //borrado logico
+                producto.Estado = false;
+
+                _context.Producto.Update(producto);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
-        public Task<List<Producto>> ObtenerPorIdsAsync(int id)
+        public async Task<Producto> ObtenerPorIdsAsync(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var entity = await _context.Producto.Where(p => p.Id == id && p.Estado == true).SingleOrDefaultAsync();
+                if (entity is null)
+                {
+                    throw new Exception("No se encontro la entidad");
+                }
+                return entity;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
         }
 
         public async Task<List<Producto>> ObtenerTodosAsync()
@@ -49,14 +99,6 @@ namespace inaApp.Repository
 
                 throw ex;
             }
-
-
-
-
-
-
-
-
         }
     }
 }

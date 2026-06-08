@@ -24,6 +24,11 @@ namespace inaApp.Api.Controllers
         public async Task<ActionResult> Index()
         {
             var lista = await _productoService.ObtenerTodosAsync();
+
+            if (lista.Count == 0) {
+                return NotFound("No hay datos disponibles");
+            }
+
             return Ok(lista);
         }
 
@@ -34,24 +39,17 @@ namespace inaApp.Api.Controllers
             return View();
         }
 
-        // GET: ProductoController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: ProductoController/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Create([FromBody] Producto producto)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                var result = await _productoService.CrearAsync(producto);
+                return Created("Producto creado", result);
             }
-            catch
+            catch (Exception)
             {
-                return View();
+                return BadRequest("Error al crear el producto");
             }
         }
 
@@ -76,25 +74,22 @@ namespace inaApp.Api.Controllers
             }
         }
 
-        // GET: ProductoController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: ProductoController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        [HttpDelete("delete/{id}")]
+        public async Task<ActionResult> Delete(int id)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                if (id <= 0) { return BadRequest("Error al eliminar, id incorrecto");}
+                
+                var result = await _productoService.EliminarAsync(id);
+                return result ? Ok("Producto eliminado") : BadRequest("Error al eliminar el producto");
             }
-            catch
+            catch (Exception)
             {
-                return View();
+
+                throw;
             }
+            
         }
     }
 }

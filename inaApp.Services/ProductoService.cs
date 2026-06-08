@@ -21,14 +21,16 @@ namespace inaApp.Services
             throw new NotImplementedException();
         }
 
-        public Task<Producto> CrearAsync(Producto entity)
+        public async Task<Producto> CrearAsync(Producto entity)
         {
-            throw new NotImplementedException();
+            //reglas de negocio
+            return await _productoRepo.CrearAsync(entity);
         }
 
-        public Task<bool> EliminarAsync(int id)
+        public async Task<bool> EliminarAsync(int id)
         {
-            throw new NotImplementedException();
+            //reglas de negocio
+            return await _productoRepo.EliminarAsync(id);
         }
 
         public Task<List<Producto>> ObtenerPorIdsAsync(int id)
