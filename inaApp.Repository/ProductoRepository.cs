@@ -107,5 +107,19 @@ namespace inaApp.Repository
                 throw ex;
             }
         }
+
+        //agregado por regla de negocio "validar nombres repetidos"
+        public async Task<Producto> ObtenerPorNombreAsync(string nombre)
+        {
+            try
+            {
+                return await _context.Producto.Where(p => p.Nombre == nombre && p.Estado == true).SingleOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
     }
 }

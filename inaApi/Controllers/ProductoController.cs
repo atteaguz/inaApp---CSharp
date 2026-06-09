@@ -68,7 +68,19 @@ namespace inaApp.Api.Controllers
                 var result = await _productoService.CrearAsync(producto);
                 return Created("Producto creado", result);
             }
-            catch (Exception)
+            catch (InvalidPriceException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DuplicatedProductNameException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidStockException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
             {
                 return BadRequest("Error al crear el producto");
             }

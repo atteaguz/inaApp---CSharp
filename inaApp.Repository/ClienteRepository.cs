@@ -32,5 +32,10 @@ namespace inaApp.Repository
         {
             throw new NotImplementedException();
         }
+
+        Task<Cliente> IGenericRepository<Cliente>.ObtenerPorNombreAsync(string nombre)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

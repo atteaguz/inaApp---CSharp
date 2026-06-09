@@ -25,7 +25,24 @@ namespace inaApp.Services
 
         public async Task<Producto> CrearAsync(Producto entity)
         {
-            //reglas de negocio
+            /***[reglas de negocio]***/
+
+            //precio sea mayor a 0 - InvalidPriceException - BadRequest
+            if (entity.Precio <= 0)
+            {
+                throw new InvalidPriceException("El precio debe ser mayor a 0.");
+            }
+            //no nombres repetidos - DuplicatedProductNameException - BadRequest
+            if (await _productoRepo.ObtenerPorNombreAsync(entity.Nombre) != null)
+            {
+                throw new DuplicatedProductNameException("El nombre del producto ya existe.");
+            }
+            //stock no negativo o 0 - InvalidStockException - BadRequest
+            if (entity.Stock <= 0)
+            {
+                throw new InvalidStockException("El stock no puede ser negativo o cero.");
+            }
+
             return await _productoRepo.CrearAsync(entity);
         }
 
