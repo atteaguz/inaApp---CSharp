@@ -33,6 +33,11 @@ namespace inaApp.Repository
                 _context.Producto.Update(producto);
                 await _context.SaveChangesAsync();
                 return producto;
+
+                /*
+                _context.Producto.Update(entity);
+                await _context.SaveChangesAsync();
+                return entity;*/
             }
             catch (Exception ex)
             {
@@ -81,7 +86,7 @@ namespace inaApp.Repository
         {
             try
             {
-                return await _context.Producto.Where(p => p.Id == id && p.Estado == true).SingleOrDefaultAsync();
+                return await _context.Producto.AsNoTracking().Where(p => p.Id == id && p.Estado == true).SingleOrDefaultAsync();
                 /*if (entity is null)
                 {
                     throw new Exception("No se encontro la entidad");
@@ -99,7 +104,7 @@ namespace inaApp.Repository
         {
             try
             {
-                return await _context.Producto.Where(p => p.Estado == true).ToListAsync();
+                return await _context.Producto.AsNoTracking().Where(p => p.Estado == true).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -113,7 +118,7 @@ namespace inaApp.Repository
         {
             try
             {
-                return await _context.Producto.Where(p => p.Nombre == nombre && p.Estado == true).SingleOrDefaultAsync();
+                return await _context.Producto.AsNoTracking().Where(p => p.Nombre == nombre && p.Estado == true).SingleOrDefaultAsync();
             }
             catch (Exception ex)
             {

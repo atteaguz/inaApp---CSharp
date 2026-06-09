@@ -3,6 +3,7 @@ using inaApp.Common.interfaces;
 using inaApp.Entities;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 
 namespace inaApp.Services
@@ -19,8 +20,29 @@ namespace inaApp.Services
 
         public async Task<Producto> ActualizarAsync(Producto entity)
         {
-            //reglas de negocio
-            return await _productoRepo.ActualizarAsync(entity);
+            /***[reglas de negocio]***/
+
+            //precio sea mayor a 0 - InvalidPriceException - BadRequest
+            if (entity.Precio <= 0)
+            {
+                throw new InvalidPriceException("El precio debe ser mayor a 0.");
+            }
+            //no nombres repetidos - DuplicatedNameException - BadRequest
+            if (await _productoRepo.ObtenerPorNombreAsync(entity.Nombre) != null && entity.Id != entity.Id)
+            {
+                throw new DuplicatedNameException($"El nombre de producto: {entity.Nombre} , ya existe.");
+            }
+            //stock no negativo o 0 - InvalidStockException - BadRequest
+            if (entity.Stock <= 0)
+            {
+                throw new InvalidStockException("El stock no puede ser negativo o cero.");
+            }
+
+            /*
+            var producto = await _productoRepo.ObtenerTodosAsync();
+            if (producto.Any(p => p.Nombre.ToLower() == entity.Nombre.ToLower() && p.Id != entity.Id))*/
+
+             return await _productoRepo.ActualizarAsync(entity);
         }
 
         public async Task<Producto> CrearAsync(Producto entity)
@@ -32,16 +54,17 @@ namespace inaApp.Services
             {
                 throw new InvalidPriceException("El precio debe ser mayor a 0.");
             }
-            //no nombres repetidos - DuplicatedProductNameException - BadRequest
-            if (await _productoRepo.ObtenerPorNombreAsync(entity.Nombre) != null)
-            {
-                throw new DuplicatedProductNameException("El nombre del producto ya existe.");
-            }
             //stock no negativo o 0 - InvalidStockException - BadRequest
             if (entity.Stock <= 0)
             {
                 throw new InvalidStockException("El stock no puede ser negativo o cero.");
             }
+            //no nombres repetidos - DuplicatedNameException - BadRequest
+            if (await _productoRepo.ObtenerPorNombreAsync(entity.Nombre) != null)
+            {
+                throw new DuplicatedNameException($"El nombre de producto: {entity.Nombre} , ya existe.");
+            }
+            
 
             return await _productoRepo.CrearAsync(entity);
         }

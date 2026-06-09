@@ -72,14 +72,15 @@ namespace inaApp.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (DuplicatedProductNameException ex)
-            {
-                return BadRequest(ex.Message);
-            }
             catch (InvalidStockException ex)
             {
                 return BadRequest(ex.Message);
             }
+            catch (DuplicatedNameException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            
             catch (Exception ex)
             {
                 return BadRequest("Error al crear el producto");
@@ -88,14 +89,26 @@ namespace inaApp.Api.Controllers
 
         //modificar un producto existente
         [HttpPatch("update/{id}")]
-        public async Task<ActionResult> Edit(int id, [FromBody] Producto producto)
+        public async Task<ActionResult> EditAsync(int id, [FromBody] Producto producto)
         {
             try
             {
                 var result = await _productoService.ActualizarAsync(producto);
                 return Ok(result);
             }
-            catch (Exception)
+            catch (InvalidPriceException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DuplicatedNameException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidStockException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
             {
                 return BadRequest("Error al actualizar el producto. Contacte al administrador");
             }
