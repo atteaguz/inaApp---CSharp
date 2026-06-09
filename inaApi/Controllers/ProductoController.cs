@@ -1,4 +1,5 @@
-﻿using inaApp.Common.interfaces;
+﻿using inaApp.Common.Exceptions;
+using inaApp.Common.interfaces;
 using inaApp.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -45,10 +46,14 @@ namespace inaApp.Api.Controllers
             try
             {
                 var producto = await _productoService.ObtenerPorIdsAsync(id);
-                if (producto == null){return NotFound("Producto no encontrado");}
+                //if (producto == null){return NotFound("Producto no encontrado. Existe?. Esta activo?");}
                 return Ok(producto);
             }
-            catch (Exception)
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
             {
                 return StatusCode(500, "Error interno del servidor. Contacte con el administrador");
             }

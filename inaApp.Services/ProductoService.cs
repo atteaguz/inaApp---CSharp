@@ -1,4 +1,5 @@
-﻿using inaApp.Common.interfaces;
+﻿using inaApp.Common.Exceptions;
+using inaApp.Common.interfaces;
 using inaApp.Entities;
 using System;
 using System.Collections.Generic;
@@ -37,7 +38,14 @@ namespace inaApp.Services
         public async Task<Producto> ObtenerPorIdsAsync(int id)
         {
             //reglas de negocio
-            return await _productoRepo.ObtenerPorIdsAsync(id);
+
+            var pro =  await _productoRepo.ObtenerPorIdsAsync(id);
+            if (pro == null) 
+            {
+                throw new NotFoundException($"Producto con id: {id} no encontrado. Existe?. Esta activo?");
+            }
+
+            return pro;
         }
 
         public async Task<List<Producto>> ObtenerTodosAsync()

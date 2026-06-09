@@ -81,14 +81,14 @@ namespace inaApp.Repository
         {
             try
             {
-                var entity = await _context.Producto.Where(p => p.Id == id && p.Estado == true).SingleOrDefaultAsync();
-                if (entity is null)
+                return await _context.Producto.Where(p => p.Id == id && p.Estado == true).SingleOrDefaultAsync();
+                /*if (entity is null)
                 {
                     throw new Exception("No se encontro la entidad");
                 }
-                return entity;
+                return entity;*/
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
 
                 throw ex;
