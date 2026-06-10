@@ -31,9 +31,24 @@ namespace inaApp.Repository
         }
 
         //eliminar cliente por id y que este activo - borrado logico
-        public Task<bool> EliminarAsync(int id)
+        public async Task<bool> EliminarAsync(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var cliente = await ObtenerPorIdsAsync(id);
+                if (cliente == null) return false;
+
+                //borrado logico
+                cliente.Estado = false;
+
+                _context.Cliente.Update(cliente);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         //obtener cliente por id y que este activo

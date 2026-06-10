@@ -46,7 +46,6 @@ namespace inaApp.Api.Controllers
             try
             {
                 var producto = await _productoService.ObtenerPorIdsAsync(id);
-                //if (producto == null){return NotFound("Producto no encontrado. Existe?. Esta activo?");}
                 return Ok(producto);
             }
             catch (NotFoundException ex)
@@ -60,7 +59,7 @@ namespace inaApp.Api.Controllers
         }
 
         //crear un nuevo producto
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<ActionResult> Create([FromBody] Producto producto)
         {
             try
@@ -120,10 +119,14 @@ namespace inaApp.Api.Controllers
         {
             try
             {
-                if (id <= 0) { return BadRequest("Error al eliminar, id incorrecto");}
+                //if (id <= 0) { return BadRequest("Error al eliminar, id incorrecto");}
                 
                 var result = await _productoService.EliminarAsync(id);
-                return result ? Ok("Producto eliminado") : BadRequest("Error al eliminar el producto");
+                return Ok("Producto eliminado.");
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (Exception ex)
             {

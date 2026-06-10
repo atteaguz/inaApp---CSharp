@@ -60,21 +60,36 @@ namespace inaApp.Api.Controllers
         }
 
         //crear nuevo cliente
+        [HttpPost("create")]
         public ActionResult Create()
         {
             return View();
         }
 
         //modificar cliente existente
+        [HttpPatch("edit/{id}")]
         public ActionResult Edit(int id)
         {
             return View();
         }
 
         //eliminar cliente existente - borrado logico
-        public ActionResult Delete(int id)
+        [HttpDelete("delete/{id}")]
+        public async Task<ActionResult> Delete(int id)
         {
-            return View();
+            try
+            {
+                var result = await _clienteService.EliminarAsync(id);
+                return Ok("Cliente eliminado.");
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error interno del servidor. Contacte con el administrador");
+            }
         }
     }
 }
