@@ -19,23 +19,33 @@ namespace inaApp.Repository
         }
 
         //modificar cliente por id y que este activo
-        public Task<Cliente> ActualizarAsync(Cliente cliente)
+        public async Task<Cliente> ActualizarAsync(Cliente entity)
         {
             throw new NotImplementedException();
         }
 
         //crear cliente nuevo, activo por defecto
-        public Task<Cliente> CrearAsync(Cliente cliente)
-        {
-            throw new NotImplementedException();
-        }
-
-        //eliminar cliente por id y que este activo - borrado logico
-        public async Task<bool> EliminarAsync(int id)
+        public async Task<Cliente> CrearAsync(Cliente entity)
         {
             try
             {
-                var cliente = await ObtenerPorIdsAsync(id);
+                await _context.Cliente.AddAsync(entity);
+                await _context.SaveChangesAsync();
+                return entity;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        //eliminar cliente por id y que este activo - borrado logico
+        public async Task<bool> EliminarAsync(int IdCliente)
+        {
+            try
+            {
+                var cliente = await ObtenerPorIdsAsync(IdCliente);
                 if (cliente == null) return false;
 
                 //borrado logico
@@ -52,11 +62,11 @@ namespace inaApp.Repository
         }
 
         //obtener cliente por id y que este activo
-        public Task<Cliente> ObtenerPorIdsAsync(int id)
+        public Task<Cliente> ObtenerPorIdsAsync(int IdCliente)
         {
             try
             {
-                return _context.Cliente.AsNoTracking().Where(c => c.Id == id && c.Estado == true).SingleOrDefaultAsync();
+                return _context.Cliente.AsNoTracking().Where(c => c.IdCliente == IdCliente && c.Estado == true).SingleOrDefaultAsync();
             }
             catch (Exception ex)
             {

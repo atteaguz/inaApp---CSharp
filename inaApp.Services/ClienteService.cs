@@ -17,38 +17,39 @@ namespace inaApp.Services
         }
 
         //modificar cliente por id y que este activo
-        public Task<Cliente> ActualizarAsync(Cliente cliente)
+        public async Task<Cliente> ActualizarAsync(Cliente entity)
         {
             throw new NotImplementedException();
         }
 
         //crear cliente, activo por defecto
-        public Task<Cliente> CrearAsync(Cliente cliente)
+        public async Task<Cliente> CrearAsync(Cliente entity)
         {
-            throw new NotImplementedException();
+            /***[reglas de negocio]***/
+            return await _clienteRepo.CrearAsync(entity);
         }
 
         //eliminar cliente por id - borrado logico
-        public async Task<bool> EliminarAsync(int id)
+        public async Task<bool> EliminarAsync(int IdCliente)
         {
             //reglas de negocio
 
-            var cliente = await _clienteRepo.ObtenerPorIdsAsync(id);
-            if (cliente == null || id <= 0)
+            var cliente = await _clienteRepo.ObtenerPorIdsAsync(IdCliente);
+            if (cliente == null || IdCliente <= 0)
             {
-                throw new NotFoundException($"Error al eliminar: Cliente con id: {id} no encontrado o nulo.");
+                throw new NotFoundException($"Error al eliminar: Cliente con id: {IdCliente} no encontrado o nulo.");
             }
-            return await _clienteRepo.EliminarAsync(id);
+            return await _clienteRepo.EliminarAsync(IdCliente);
         }
 
         //obtener cliente por id y que este activo
-        public async Task<Cliente> ObtenerPorIdsAsync(int id)
+        public async Task<Cliente> ObtenerPorIdsAsync(int IdCliente)
         {
             //reglas de negocio
-            var cliente = await _clienteRepo.ObtenerPorIdsAsync(id);
+            var cliente = await _clienteRepo.ObtenerPorIdsAsync(IdCliente);
             if (cliente == null)
             {
-                throw new NotFoundException($"Cliente con id: {id} no encontrado.");
+                throw new NotFoundException($"Cliente con id: {IdCliente} no encontrado.");
             }
             return cliente;
         }

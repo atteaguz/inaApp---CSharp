@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace inaApp.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class Inicial : Migration
+    public partial class EntidadClienteActualizada : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,17 +15,21 @@ namespace inaApp.Data.Migrations
                 name: "tbCliente",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    IdCliente = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Apellido1 = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Apellido2 = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FechaNacimiento = table.Column<DateOnly>(type: "date", nullable: false),
-                    Estado = table.Column<bool>(type: "bit", nullable: false)
+                    TipoIdentificacion = table.Column<byte>(type: "tinyint", nullable: false),
+                    NumeroIdentificacion = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    PrimerApellido = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    SegundoApellido = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    CorreoElectronico = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    Telefono = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Estado = table.Column<bool>(type: "bit", nullable: false),
+                    FechaCreacion = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_tbCliente", x => x.Id);
+                    table.PrimaryKey("PK_tbCliente", x => x.IdCliente);
                 });
 
             migrationBuilder.CreateTable(
@@ -44,6 +48,12 @@ namespace inaApp.Data.Migrations
                 {
                     table.PrimaryKey("PK_tbProducto", x => x.Id);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tbCliente_TipoIdentificacion_NumeroIdentificacion",
+                table: "tbCliente",
+                columns: new[] { "TipoIdentificacion", "NumeroIdentificacion" },
+                unique: true);
         }
 
         /// <inheritdoc />

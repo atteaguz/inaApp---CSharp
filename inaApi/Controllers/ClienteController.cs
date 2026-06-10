@@ -41,12 +41,12 @@ namespace inaApp.Api.Controllers
         }
 
         //obtener cliente por id
-        [HttpGet("getbyid/{id}")]
-        public async Task<ActionResult> Details(int id)
+        [HttpGet("getbyid/{IdCliente}")]
+        public async Task<ActionResult> Details(int IdCliente)
         {
             try
             {
-                var cliente = await _clienteService.ObtenerPorIdsAsync(id);
+                var cliente = await _clienteService.ObtenerPorIdsAsync(IdCliente);
                 return Ok(cliente);
             }
             catch (NotFoundException ex)
@@ -61,25 +61,33 @@ namespace inaApp.Api.Controllers
 
         //crear nuevo cliente
         [HttpPost("create")]
-        public ActionResult Create()
+        public async Task<ActionResult> Create([FromBody] Cliente cliente)
         {
-            return View();
+            try
+            {
+                var result = await _clienteService.CrearAsync(cliente);
+                return Created("Cliente creado: ", result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al crear el cliente");
+            }
         }
 
         //modificar cliente existente
-        [HttpPatch("edit/{id}")]
-        public ActionResult Edit(int id)
+        [HttpPatch("edit/{IdCliente}")]
+        public ActionResult Edit(int IdCliente)
         {
             return View();
         }
 
         //eliminar cliente existente - borrado logico
-        [HttpDelete("delete/{id}")]
-        public async Task<ActionResult> Delete(int id)
+        [HttpDelete("delete/{IdCliente}")]
+        public async Task<ActionResult> Delete(int IdCliente)
         {
             try
             {
-                var result = await _clienteService.EliminarAsync(id);
+                var result = await _clienteService.EliminarAsync(IdCliente);
                 return Ok("Cliente eliminado.");
             }
             catch (NotFoundException ex)
