@@ -1,4 +1,5 @@
-﻿using inaApp.Common.interfaces;
+﻿using inaApp.Common.Exceptions;
+using inaApp.Common.interfaces;
 using inaApp.Entities;
 using System;
 using System.Collections.Generic;
@@ -34,9 +35,15 @@ namespace inaApp.Services
         }
 
         //obtener cliente por id y que este activo
-        public Task<Cliente> ObtenerPorIdsAsync(int id)
+        public async Task<Cliente> ObtenerPorIdsAsync(int id)
         {
-            throw new NotImplementedException();
+            //reglas de negocio
+            var cli = await _clienteRepo.ObtenerPorIdsAsync(id);
+            if (cli == null)
+            {
+                throw new NotFoundException($"Cliente con id: {id} no encontrado.");
+            }
+            return cli;
         }
 
         //obtener todos los clientes activos

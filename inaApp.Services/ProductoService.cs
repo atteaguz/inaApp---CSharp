@@ -82,7 +82,7 @@ namespace inaApp.Services
             var pro =  await _productoRepo.ObtenerPorIdsAsync(id);
             if (pro == null) 
             {
-                throw new NotFoundException($"Producto con id: {id} no encontrado. Existe?. Esta activo?");
+                throw new NotFoundException($"Producto con id: {id} no encontrado.");
             }
 
             return pro;

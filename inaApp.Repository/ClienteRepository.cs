@@ -39,7 +39,15 @@ namespace inaApp.Repository
         //obtener cliente por id y que este activo
         public Task<Cliente> ObtenerPorIdsAsync(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return _context.Cliente.AsNoTracking().Where(c => c.Id == id && c.Estado == true).SingleOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
         }
 
         //obtener todos los clientes activos
@@ -61,7 +69,7 @@ namespace inaApp.Repository
         {
             try
             {
-                return await _context.Cliente.AsNoTracking().Where(c => c.Nombre == nombre && c.Estado == true).FirstOrDefaultAsync();
+                return await _context.Cliente.AsNoTracking().Where(c => c.Nombre == nombre && c.Estado == true).SingleOrDefaultAsync();
             }
             catch (Exception ex)
             {

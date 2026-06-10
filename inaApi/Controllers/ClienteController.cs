@@ -1,4 +1,5 @@
-﻿using inaApp.Common.interfaces;
+﻿using inaApp.Common.Exceptions;
+using inaApp.Common.interfaces;
 using inaApp.Entities;
 using inaApp.Services;
 using Microsoft.AspNetCore.Http;
@@ -41,9 +42,21 @@ namespace inaApp.Api.Controllers
 
         //obtener cliente por id
         [HttpGet("getbyid/{id}")]
-        public ActionResult Details(int id)
+        public async Task<ActionResult> Details(int id)
         {
-            return View();
+            try
+            {
+                var cliente = await _clienteService.ObtenerPorIdsAsync(id);
+                return Ok(cliente);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error interno del servidor. Contacte con el administrador");
+            }
         }
 
         //crear nuevo cliente
