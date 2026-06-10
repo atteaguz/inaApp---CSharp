@@ -27,7 +27,7 @@ namespace inaApp.Api.Controllers
                 var lista = await _productoService.ObtenerTodosAsync();
 
                 if (lista.Count == 0) {
-                    return NotFound("No hay datos disponibles");
+                    return NotFound("No hay productos disponibles");
                 }
 
                 return Ok(lista);

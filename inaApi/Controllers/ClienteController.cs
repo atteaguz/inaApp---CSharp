@@ -1,5 +1,6 @@
 ﻿using inaApp.Common.interfaces;
 using inaApp.Entities;
+using inaApp.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,82 +19,49 @@ namespace inaApp.Api.Controllers
             _clienteService = clienteServ;
         }
 
-        // GET: ClienteController
+        //obtener todos los clientes
         [HttpGet("getall")]
-        public ActionResult Index()
+        public async Task<ActionResult> IndexAsync()
         {
-            _clienteService.ObtenerTodosAsync();
-            return Ok(" Test Correcto - ClienteController.Index.ObtenerTodosAsync");
+            try
+            {
+                var lista = await _clienteService.ObtenerTodosAsync();
+
+                if (lista.Count == 0)
+                {
+                    return NotFound("No hay clientes disponibles");
+                }
+                return Ok(lista);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor. Contacte con el administrador");
+            }
         }
 
-        // GET: ClienteController/Details/5
+        //obtener cliente por id
         [HttpGet("getbyid/{id}")]
         public ActionResult Details(int id)
         {
             return View();
         }
 
-        // GET: ClienteController/Create
+        //crear nuevo cliente
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: ClienteController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: ClienteController/Edit/5
+        //modificar cliente existente
         public ActionResult Edit(int id)
         {
             return View();
         }
 
-        // POST: ClienteController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: ClienteController/Delete/5
+        //eliminar cliente existente - borrado logico
         public ActionResult Delete(int id)
         {
             return View();
-        }
-
-        // POST: ClienteController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
         }
     }
 }

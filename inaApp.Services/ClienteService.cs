@@ -15,30 +15,34 @@ namespace inaApp.Services
             _clienteRepo = clienteRepo;
         }
 
+        //modificar cliente por id y que este activo
         public Task<Cliente> ActualizarAsync(Cliente cliente)
         {
             throw new NotImplementedException();
         }
 
+        //crear cliente, activo por defecto
         public Task<Cliente> CrearAsync(Cliente cliente)
         {
             throw new NotImplementedException();
         }
 
+        //eliminar cliente por id - borrado logico
         public Task<bool> EliminarAsync(int id)
         {
             throw new NotImplementedException();
         }
 
+        //obtener cliente por id y que este activo
         public Task<Cliente> ObtenerPorIdsAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<Cliente>> ObtenerTodosAsync()
+        //obtener todos los clientes activos
+        public async Task<List<Cliente>> ObtenerTodosAsync()
         {
-            _clienteRepo.ObtenerTodosAsync();
-            return null;
+            return await _clienteRepo.ObtenerTodosAsync();
         }
     }
 }
