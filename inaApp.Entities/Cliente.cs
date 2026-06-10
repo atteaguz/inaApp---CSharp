@@ -46,7 +46,6 @@ namespace inaApp.Entities
         public bool Estado { get; set; } = true;
 
         [Required]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime FechaCreacion { get; set; } = DateTime.Now;
     }
 }

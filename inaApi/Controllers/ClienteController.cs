@@ -75,10 +75,18 @@ namespace inaApp.Api.Controllers
         }
 
         //modificar cliente existente
-        [HttpPatch("edit/{IdCliente}")]
-        public ActionResult Edit(int IdCliente)
+        [HttpPatch("update/{IdCliente}")]
+        public async Task<ActionResult> EditAsync(int IdCliente, [FromBody] Cliente cliente)
         {
-            return View();
+            try
+            {
+                var result = await _clienteService.ActualizarAsync(cliente);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al actualizar el cliente. Contacte al administrador");
+            }
         }
 
         //eliminar cliente existente - borrado logico

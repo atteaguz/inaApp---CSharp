@@ -20,13 +20,15 @@ namespace inaApp.Services
         //modificar cliente por id y que este activo
         public async Task<Cliente> ActualizarAsync(Cliente entity)
         {
-            throw new NotImplementedException();
+            //reglas de negocio - faltan validaciones personalizadas
+
+            return await _clienteRepo.ActualizarAsync(entity);
         }
 
         //crear cliente, activo por defecto
         public async Task<Cliente> CrearAsync(Cliente entity)
         {
-            /***[reglas de negocio]***/
+            //[reglas de negocio] - faltan validaciones personalizadas
 
             //validar que el valor existe en el enum (1,2,3 o 4)
             if (!Enum.IsDefined(typeof(TipoIdentificacionEnum), entity.TipoIdentificacion))

@@ -21,7 +21,26 @@ namespace inaApp.Repository
         //modificar cliente por id y que este activo
         public async Task<Cliente> ActualizarAsync(Cliente entity)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var cliente = await ObtenerPorIdsAsync(entity.IdCliente);
+                if (cliente == null) return null;
+                cliente.TipoIdentificacion = entity.TipoIdentificacion;
+                cliente.NumeroIdentificacion = entity.NumeroIdentificacion;
+                cliente.Nombre = entity.Nombre;
+                cliente.PrimerApellido = entity.PrimerApellido;
+                cliente.SegundoApellido = entity.SegundoApellido;
+                cliente.CorreoElectronico = entity.CorreoElectronico;
+                cliente.Telefono = entity.Telefono;
+                _context.Cliente.Update(cliente);
+                await _context.SaveChangesAsync();
+                return cliente;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
         }
 
         //crear cliente nuevo, activo por defecto
