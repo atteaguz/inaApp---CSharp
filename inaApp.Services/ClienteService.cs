@@ -4,6 +4,7 @@ using inaApp.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using inaApp.Common.Enums;
 
 namespace inaApp.Services
 {
@@ -26,6 +27,13 @@ namespace inaApp.Services
         public async Task<Cliente> CrearAsync(Cliente entity)
         {
             /***[reglas de negocio]***/
+
+            //validar que el valor existe en el enum (1,2,3 o 4)
+            if (!Enum.IsDefined(typeof(TipoIdentificacionEnum), entity.TipoIdentificacion))
+            {
+                throw new ArgumentException("El tipo de identificacion es inválido. Ingrese un valor valido.");
+            }
+
             return await _clienteRepo.CrearAsync(entity);
         }
 

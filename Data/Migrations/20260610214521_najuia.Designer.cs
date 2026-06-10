@@ -12,8 +12,8 @@ using inaApp.Data;
 namespace inaApp.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260610172526_EntidadClienteActualizada")]
-    partial class EntidadClienteActualizada
+    [Migration("20260610214521_najuia")]
+    partial class najuia
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,7 +34,6 @@ namespace inaApp.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdCliente"));
 
                     b.Property<string>("CorreoElectronico")
-                        .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
@@ -61,12 +60,10 @@ namespace inaApp.Data.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("SegundoApellido")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Telefono")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
@@ -75,7 +72,7 @@ namespace inaApp.Data.Migrations
 
                     b.HasKey("IdCliente");
 
-                    b.HasIndex("TipoIdentificacion", "NumeroIdentificacion")
+                    b.HasIndex("NumeroIdentificacion")
                         .IsUnique();
 
                     b.ToTable("tbCliente");

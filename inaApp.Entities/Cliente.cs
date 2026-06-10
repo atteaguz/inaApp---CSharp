@@ -8,7 +8,7 @@ using System.Text;
 namespace inaApp.Entities
 {
     [Table("tbCliente")]
-    [Index(nameof(TipoIdentificacion), nameof(NumeroIdentificacion), IsUnique = true)]
+    [Index(nameof(NumeroIdentificacion), IsUnique = true)] //se cambio porque revienta al querer crear un nuevo usuario con el mismo TipoIdentificacion.
     public class Cliente
     {
         //propiedades de cliente
@@ -32,15 +32,15 @@ namespace inaApp.Entities
         public string PrimerApellido { get; set; }
 
         [MaxLength(50)]
-        public string SegundoApellido { get; set; }
+        public string? SegundoApellido { get; set; }
 
         [MaxLength(150)]
         [EmailAddress]
-        public string CorreoElectronico { get; set; }
+        public string? CorreoElectronico { get; set; }
 
         [MaxLength(20)]
         [Phone]
-        public string Telefono { get; set; }    
+        public string? Telefono { get; set; }    
 
         [Required]
         public bool Estado { get; set; } = true;

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace inaApp.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class EntidadClienteActualizada : Migration
+    public partial class najuia : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -21,9 +21,9 @@ namespace inaApp.Data.Migrations
                     NumeroIdentificacion = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     PrimerApellido = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    SegundoApellido = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CorreoElectronico = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    Telefono = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    SegundoApellido = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    CorreoElectronico = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
+                    Telefono = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     Estado = table.Column<bool>(type: "bit", nullable: false),
                     FechaCreacion = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -50,9 +50,9 @@ namespace inaApp.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_tbCliente_TipoIdentificacion_NumeroIdentificacion",
+                name: "IX_tbCliente_NumeroIdentificacion",
                 table: "tbCliente",
-                columns: new[] { "TipoIdentificacion", "NumeroIdentificacion" },
+                column: "NumeroIdentificacion",
                 unique: true);
         }
 
