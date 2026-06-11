@@ -1,10 +1,11 @@
-﻿using inaApp.Common.Exceptions;
+﻿using inaApp.Common.Enums;
+using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
 using inaApp.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using inaApp.Common.Enums;
+using System.Text.RegularExpressions;
 
 namespace inaApp.Services
 {
@@ -20,7 +21,58 @@ namespace inaApp.Services
         //modificar cliente por id y que este activo
         public async Task<Cliente> ActualizarAsync(Cliente entity)
         {
-            //reglas de negocio - faltan validaciones personalizadas
+            //reglas de negocio
+
+            //validar al cliente
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity), "El cliente no puede ser nulo");
+
+            if (entity.IdCliente <= 0)
+                throw new ArgumentException("El ID del cliente no es válido");
+
+            //validar campos requeridos
+            if (string.IsNullOrWhiteSpace(entity.Nombre))
+                throw new RequiredFieldMissingException("El nombre es obligatorio");
+
+            if (string.IsNullOrWhiteSpace(entity.PrimerApellido))
+                throw new RequiredFieldMissingException("El primer apellido es obligatorio");
+
+            if (string.IsNullOrWhiteSpace(entity.NumeroIdentificacion))
+                throw new RequiredFieldMissingException("El número de identificación es obligatorio");
+
+            //validar formato de correo si lo cambia
+            if (!string.IsNullOrEmpty(entity.CorreoElectronico))
+            {
+                if (!IsValidEmail(entity.CorreoElectronico))
+                    throw new InvalidEmailFormatException($"El formato del correo '{entity.CorreoElectronico}' no es válido");
+            }
+
+            //validar formato de teléfono si lo cambia
+            if (!string.IsNullOrEmpty(entity.Telefono))
+            {
+                if (!IsValidPhone(entity.Telefono))
+                    throw new InvalidPhoneFormatException($"El formato del teléfono '{entity.Telefono}' no es válido");
+            }
+
+            //si cambia la identificación, validar que no esté duplicada
+            if (!Enum.IsDefined(typeof(TipoIdentificacionEnum), entity.TipoIdentificacion))
+            {
+                throw new InvalidIdentificationException("El tipo de identificación es inválido");
+            }
+
+            var existeCliente = await _clienteRepo.ExistePorIdentificacionAsync(
+                entity.TipoIdentificacion,
+                entity.NumeroIdentificacion,
+                entity.IdCliente);
+
+            if (existeCliente)
+            {
+                throw new DuplicateIdentificationException($"Ya existe otro cliente con tipo '{entity.TipoIdentificacion}' y número '{entity.NumeroIdentificacion}'");
+            }
+
+            //registrar fecha de actualización
+            entity.Estado = true;
+            entity.FechaCreacion = DateTime.Now;
 
             return await _clienteRepo.ActualizarAsync(entity);
         }
@@ -28,13 +80,53 @@ namespace inaApp.Services
         //crear cliente, activo por defecto
         public async Task<Cliente> CrearAsync(Cliente entity)
         {
-            //[reglas de negocio] - faltan validaciones personalizadas
+            //reglas de negocio
 
-            //validar que el valor existe en el enum (1,2,3 o 4)
+            //validar campos requeridos
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity), "El cliente no puede ser nulo");
+
+            if (string.IsNullOrWhiteSpace(entity.Nombre))
+                throw new RequiredFieldMissingException("El nombre es obligatorio");
+
+            if (string.IsNullOrWhiteSpace(entity.PrimerApellido))
+                throw new RequiredFieldMissingException("El primer apellido es obligatorio");
+
+            if (string.IsNullOrWhiteSpace(entity.NumeroIdentificacion))
+                throw new RequiredFieldMissingException("El número de identificación es obligatorio");
+
+            //validar formato de correo electrónico
+            if (!string.IsNullOrEmpty(entity.CorreoElectronico))
+            {
+                if (!IsValidEmail(entity.CorreoElectronico))
+                    throw new InvalidEmailFormatException($"El formato del correo '{entity.CorreoElectronico}' no es válido");
+            }
+
+            //validar formato de teléfono (si se proporciona)
+            if (!string.IsNullOrEmpty(entity.Telefono))
+            {
+                if (!IsValidPhone(entity.Telefono))
+                    throw new InvalidPhoneFormatException($"El formato del teléfono '{entity.Telefono}' no es válido.");
+            }
+
+            //validar tipo de identificacion
             if (!Enum.IsDefined(typeof(TipoIdentificacionEnum), entity.TipoIdentificacion))
             {
-                throw new ArgumentException("El tipo de identificacion es inválido. Ingrese un valor valido.");
+                throw new InvalidIdentificationException($"El tipo de identificación '{entity.TipoIdentificacion}' es inválido. Valores permitidos: 1 (Cédula Física), 2 (Cédula Jurídica), 3 (DIMEX), 4 (Pasaporte)");
             }
+            // 6. Validar que no exista otro cliente con la misma identificación
+            var existeCliente = await _clienteRepo.ExistePorIdentificacionAsync(
+                entity.TipoIdentificacion,
+                entity.NumeroIdentificacion,
+                entity.IdCliente);
+            if (existeCliente)
+            {
+                throw new DuplicateIdentificationException($"Ya existe un cliente con tipo '{entity.TipoIdentificacion}' y número '{entity.NumeroIdentificacion}'");
+            }
+
+            //asignar valores por defecto
+            entity.Estado = true;
+            entity.FechaCreacion = DateTime.Now;
 
             return await _clienteRepo.CrearAsync(entity);
         }
@@ -68,6 +160,28 @@ namespace inaApp.Services
         public async Task<List<Cliente>> ObtenerTodosAsync()
         {
             return await _clienteRepo.ObtenerTodosAsync();
+        }
+
+        //mtodos auxiliares de validación
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool IsValidPhone(string phone)
+        {
+            // Permite: números, guiones, espacios, signo + al inicio
+            // Ejemplos válidos: 8888-1234, +50688881234, 22223333
+            return !string.IsNullOrWhiteSpace(phone) &&
+                   Regex.IsMatch(phone, @"^\+?[\d\s\-]+$");
         }
     }
 }

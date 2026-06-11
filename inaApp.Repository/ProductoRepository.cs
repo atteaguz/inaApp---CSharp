@@ -126,5 +126,10 @@ namespace inaApp.Repository
                 throw ex;
             }
         }
+
+        public async Task<bool> ExistePorIdentificacionAsync(byte tipoIdentificacion, string numeroIdentificacion, int? idExcluir = null)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

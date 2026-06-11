@@ -68,6 +68,30 @@ namespace inaApp.Api.Controllers
                 var result = await _clienteService.CrearAsync(cliente);
                 return Created("Cliente creado: ", result);
             }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(new { error = "Datos inválidos", message = ex.Message });
+            }
+            catch (RequiredFieldMissingException ex)
+            {
+                return BadRequest(new { error = "Campo requerido faltante", message = ex.Message });
+            }
+            catch (InvalidEmailFormatException ex)
+            {
+                return BadRequest(new { error = "Correo electrónico inválido", message = ex.Message });
+            }
+            catch (InvalidPhoneFormatException ex)
+            {
+                return BadRequest(new { error = "Teléfono inválido", message = ex.Message });
+            }
+            catch (InvalidIdentificationException ex)
+            {
+                return BadRequest(new { error = "Tipo de identificación inválido", message = ex.Message });
+            }
+            catch (DuplicateIdentificationException ex)
+            {
+                return BadRequest(new { error = "Identificación duplicada", message = ex.Message });
+            }
             catch (Exception ex)
             {
                 return BadRequest("Error al crear el cliente");
@@ -80,8 +104,35 @@ namespace inaApp.Api.Controllers
         {
             try
             {
+                if (IdCliente != cliente.IdCliente)
+                return BadRequest(new { error = "El ID de la URL no coincide con el ID del cuerpo" });
+
                 var result = await _clienteService.ActualizarAsync(cliente);
                 return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = "Argumento inválido", message = ex.Message });
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { error = "Cliente no encontrado", message = ex.Message });
+            }
+            catch (RequiredFieldMissingException ex)
+            {
+                return BadRequest(new { error = "Campo requerido faltante", message = ex.Message });
+            }
+            catch (InvalidEmailFormatException ex)
+            {
+                return BadRequest(new { error = "Correo electrónico inválido", message = ex.Message });
+            }
+            catch (InvalidPhoneFormatException ex)
+            {
+                return BadRequest(new { error = "Teléfono inválido", message = ex.Message });
+            }
+            catch (DuplicateIdentificationException ex)
+            {
+                return BadRequest(new { error = "Identificación duplicada", message = ex.Message });
             }
             catch (Exception ex)
             {
