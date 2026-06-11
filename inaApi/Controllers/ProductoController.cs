@@ -96,6 +96,9 @@ namespace inaApp.Api.Controllers
         {
             try
             {
+                producto.Estado = true;
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+
                 var result = await _productoService.ActualizarAsync(producto);
                 return Ok(result);
             }
