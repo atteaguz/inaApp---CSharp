@@ -12,8 +12,8 @@ using inaApp.Data;
 namespace inaApp.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260610223012_ujiebat")]
-    partial class ujiebat
+    [Migration("20260611145106_najuia")]
+    partial class najuia
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -66,8 +66,8 @@ namespace inaApp.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<byte>("TipoIdentificacion")
-                        .HasColumnType("tinyint");
+                    b.Property<int>("TipoIdentificacion")
+                        .HasColumnType("int");
 
                     b.HasKey("IdCliente");
 

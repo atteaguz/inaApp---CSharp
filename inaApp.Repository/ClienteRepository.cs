@@ -1,4 +1,5 @@
-﻿using inaApp.Common.interfaces;
+﻿using static inaApp.Common.Enums.Enumeradores;
+using inaApp.Common.interfaces;
 using inaApp.Data;
 using inaApp.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -121,7 +122,7 @@ namespace inaApp.Repository
             }
         }
 
-        public async Task<bool> ExistePorIdentificacionAsync(byte tipoIdentificacion, string numeroIdentificacion, int? idExcluir = null)
+        public async Task<bool> ExistePorIdentificacionAsync(TipoIdentificacionEnum tipoIdentificacion, string numeroIdentificacion, int? idExcluir = null)
         {
             var query = _context.Cliente
                 .Where(c => c.TipoIdentificacion == tipoIdentificacion &&

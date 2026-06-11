@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+using static inaApp.Common.Enums.Enumeradores;
 
 namespace inaApp.Entities
 {
@@ -17,7 +18,7 @@ namespace inaApp.Entities
         public int IdCliente { get; set; }
 
         [Required]
-        public byte TipoIdentificacion { get; set; }
+        public TipoIdentificacionEnum TipoIdentificacion { get; set; }
 
         [Required]
         [MaxLength(20)]

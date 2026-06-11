@@ -4,11 +4,16 @@ using System.Text;
 
 namespace inaApp.Common.Enums
 {
-    public enum TipoIdentificacionEnum : byte
+    public static class Enumeradores
     {
-        CedulaFisica = 1,
-        CedulaJuridica = 2,
-        DIMEX = 3,
-        Pasaporte = 4
+        public enum TipoIdentificacionEnum
+        {
+             CedulaFisica = 1,
+             CedulaJuridica = 2,
+            DIMEX = 3,
+            Pasaporte = 4,
+            NITE = 5
+        }
     }
+    
 }

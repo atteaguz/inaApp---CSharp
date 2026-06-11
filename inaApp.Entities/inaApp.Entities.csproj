@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.8" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\inaApp.Common\inaApp.Common.csproj" />
+  </ItemGroup>
+
 </Project>

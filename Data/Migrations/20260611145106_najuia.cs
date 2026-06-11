@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace inaApp.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class ujiebat : Migration
+    public partial class najuia : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,7 +17,7 @@ namespace inaApp.Data.Migrations
                 {
                     IdCliente = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TipoIdentificacion = table.Column<byte>(type: "tinyint", nullable: false),
+                    TipoIdentificacion = table.Column<int>(type: "int", nullable: false),
                     NumeroIdentificacion = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     PrimerApellido = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),

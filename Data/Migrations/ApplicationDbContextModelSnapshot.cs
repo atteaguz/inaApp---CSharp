@@ -63,8 +63,8 @@ namespace inaApp.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<byte>("TipoIdentificacion")
-                        .HasColumnType("tinyint");
+                    b.Property<int>("TipoIdentificacion")
+                        .HasColumnType("int");
 
                     b.HasKey("IdCliente");
 

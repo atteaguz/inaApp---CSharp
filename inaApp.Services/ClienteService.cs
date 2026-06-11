@@ -1,11 +1,11 @@
-﻿using inaApp.Common.Enums;
-using inaApp.Common.Exceptions;
+﻿using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
 using inaApp.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using static inaApp.Common.Enums.Enumeradores;
 
 namespace inaApp.Services
 {
