@@ -9,7 +9,7 @@ using static inaApp.Common.Enums.Enumeradores;
 namespace inaApp.Entities
 {
     [Table("tbCliente")]
-    [Index(nameof(NumeroIdentificacion), IsUnique = true)] //se cambio porque revienta al querer crear un nuevo usuario con el mismo TipoIdentificacion.
+    [Index(nameof(TipoIdentificacion), nameof(NumeroIdentificacion), IsUnique = true)]
     public class Cliente
     {
         //propiedades de cliente

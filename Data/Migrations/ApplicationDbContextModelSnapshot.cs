@@ -68,7 +68,7 @@ namespace inaApp.Data.Migrations
 
                     b.HasKey("IdCliente");
 
-                    b.HasIndex("NumeroIdentificacion")
+                    b.HasIndex("TipoIdentificacion", "NumeroIdentificacion")
                         .IsUnique();
 
                     b.ToTable("tbCliente");

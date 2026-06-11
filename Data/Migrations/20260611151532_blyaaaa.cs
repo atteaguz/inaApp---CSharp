@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace inaApp.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class najuia : Migration
+    public partial class blyaaaa : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -50,9 +50,9 @@ namespace inaApp.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_tbCliente_NumeroIdentificacion",
+                name: "IX_tbCliente_TipoIdentificacion_NumeroIdentificacion",
                 table: "tbCliente",
-                column: "NumeroIdentificacion",
+                columns: new[] { "TipoIdentificacion", "NumeroIdentificacion" },
                 unique: true);
         }
 

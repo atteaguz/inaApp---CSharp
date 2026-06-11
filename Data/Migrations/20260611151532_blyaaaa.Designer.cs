@@ -12,8 +12,8 @@ using inaApp.Data;
 namespace inaApp.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260611145106_najuia")]
-    partial class najuia
+    [Migration("20260611151532_blyaaaa")]
+    partial class blyaaaa
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -71,7 +71,7 @@ namespace inaApp.Data.Migrations
 
                     b.HasKey("IdCliente");
 
-                    b.HasIndex("NumeroIdentificacion")
+                    b.HasIndex("TipoIdentificacion", "NumeroIdentificacion")
                         .IsUnique();
 
                     b.ToTable("tbCliente");
