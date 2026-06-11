@@ -36,11 +36,11 @@ namespace inaApp.Entities
         public string? SegundoApellido { get; set; }
 
         [MaxLength(150)]
-        [EmailAddress]
+        [EmailAddress(ErrorMessage = "El correo electrónico no es válido")]
         public string? CorreoElectronico { get; set; }
 
         [MaxLength(20)]
-        [Phone]
+        [Phone(ErrorMessage = "El número de teléfono no es válido")]
         public string? Telefono { get; set; }    
 
         [Required]

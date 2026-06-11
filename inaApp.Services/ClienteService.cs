@@ -178,8 +178,6 @@ namespace inaApp.Services
 
         private bool IsValidPhone(string phone)
         {
-            // Permite: números, guiones, espacios, signo + al inicio
-            // Ejemplos válidos: 8888-1234, +50688881234, 22223333
             return !string.IsNullOrWhiteSpace(phone) &&
                    Regex.IsMatch(phone, @"^\+?[\d\s\-]+$");
         }
