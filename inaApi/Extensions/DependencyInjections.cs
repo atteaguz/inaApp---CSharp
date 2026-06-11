@@ -1,5 +1,6 @@
 ﻿using inaApp.Common.interfaces;
 using inaApp.Data;
+using inaApp.DTOs.Producto;
 using inaApp.Entities;
 using inaApp.Repository;
 using inaApp.Services;
