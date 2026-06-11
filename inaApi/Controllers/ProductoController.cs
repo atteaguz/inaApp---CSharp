@@ -64,6 +64,10 @@ namespace inaApp.Api.Controllers
         {
             try
             {
+                producto.Estado = true;
+
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+
                 var result = await _productoService.CrearAsync(producto);
                 return Created("Producto creado", result);
             }
