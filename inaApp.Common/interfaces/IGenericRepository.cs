@@ -15,6 +15,6 @@ namespace inaApp.Common.interfaces
         Task<E> ActualizarAsync(E entity);
         Task<bool> EliminarAsync(int id);
         Task<E> ObtenerPorNombreAsync(string nombre);
-        Task<bool> ExistePorIdentificacionAsync(TipoIdentificacionEnum tipoIdentificacion, string numeroIdentificacion, int? idExcluir = null);
+        Task<bool> ExistePorIdentificacionAsync(TipoIdentificacionEnum tipoIdentificacion, string numeroIdentificacion);//, int? idExcluir = null)
     }
 }

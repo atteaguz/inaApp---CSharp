@@ -1,6 +1,7 @@
 ﻿using inaApp.Common.interfaces;
 using inaApp.Data;
 using inaApp.DTOs.Producto;
+using inaApp.DTOs.Cliente;
 using inaApp.Entities;
 using inaApp.Repository;
 using inaApp.Services;
@@ -20,7 +21,7 @@ namespace inaApp.Api.Extensions
 
             //inyecciones de dependencias de servicios
             services.AddScoped<IGenericService<ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO>, ProductoService>();
-            services.AddScoped<IGenericService<Cliente>, ClienteService>();
+            services.AddScoped<IGenericService<ClienteResponseDTO, ClienteCreateDTO, ClienteUpdateDTO>, ClienteService>();
 
 
             //inyecciones de dependencias de repositorios

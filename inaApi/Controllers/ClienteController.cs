@@ -1,5 +1,6 @@
 ﻿using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
+using inaApp.DTOs.Cliente;
 using inaApp.Entities;
 using inaApp.Services;
 using Microsoft.AspNetCore.Http;
@@ -13,9 +14,9 @@ namespace inaApp.Api.Controllers
     {
 
         //inyeccion de ClienteService
-        private readonly IGenericService<Cliente> _clienteService;
+        private readonly IGenericService<ClienteResponseDTO, ClienteCreateDTO, ClienteUpdateDTO> _clienteService;
 
-        public ClienteController(IGenericService<Cliente> clienteServ)
+        public ClienteController(IGenericService<ClienteResponseDTO, ClienteCreateDTO, ClienteUpdateDTO> clienteServ)
         {
             _clienteService = clienteServ;
         }
@@ -61,11 +62,11 @@ namespace inaApp.Api.Controllers
 
         //crear nuevo cliente
         [HttpPost("create")]
-        public async Task<ActionResult> Create([FromBody] Cliente cliente)
+        public async Task<ActionResult> Create([FromBody] ClienteCreateDTO clienteDTO)
         {
             try
             {
-                var result = await _clienteService.CrearAsync(cliente);
+                var result = await _clienteService.CrearAsync(clienteDTO);
                 return Created("Cliente creado: ", result);
             }
             catch (ArgumentNullException ex)
@@ -100,14 +101,16 @@ namespace inaApp.Api.Controllers
 
         //modificar cliente existente
         [HttpPatch("update/{IdCliente}")]
-        public async Task<ActionResult> EditAsync(int IdCliente, [FromBody] Cliente cliente)
+        public async Task<ActionResult> EditAsync(int IdCliente, [FromBody] ClienteUpdateDTO clienteDTO)
         {
             try
             {
-                if (IdCliente != cliente.IdCliente)
+                if (IdCliente != clienteDTO.IdCliente)
                 return BadRequest(new { error = "El ID de la URL no coincide con el ID del cuerpo" });
 
-                var result = await _clienteService.ActualizarAsync(cliente);
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+
+                var result = await _clienteService.ActualizarAsync(clienteDTO);
                 return Ok(result);
             }
             catch (ArgumentException ex)

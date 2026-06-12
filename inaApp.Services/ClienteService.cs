@@ -1,5 +1,7 @@
 ﻿using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
+using inaApp.DTOs.Cliente;
+using inaApp.DTOs.Producto;
 using inaApp.Entities;
 using System;
 using System.Collections.Generic;
@@ -9,7 +11,7 @@ using static inaApp.Common.Enums.Enumeradores;
 
 namespace inaApp.Services
 {
-    public class ClienteService : IGenericService<Cliente>
+    public class ClienteService : IGenericService<ClienteResponseDTO, ClienteCreateDTO, ClienteUpdateDTO>
     {
         //inyeccion de ClienteRepository
         private readonly IGenericRepository<Cliente> _clienteRepo;
@@ -19,7 +21,7 @@ namespace inaApp.Services
         }
 
         //modificar cliente por id y que este activo
-        public async Task<Cliente> ActualizarAsync(Cliente entity)
+        public async Task<ClienteResponseDTO> ActualizarAsync(ClienteUpdateDTO entity)
         {
             //reglas de negocio
 
@@ -62,23 +64,21 @@ namespace inaApp.Services
 
             var existeCliente = await _clienteRepo.ExistePorIdentificacionAsync(
                 entity.TipoIdentificacion,
-                entity.NumeroIdentificacion,
-                entity.IdCliente);
+                entity.NumeroIdentificacion/*,
+                entity.IdCliente);*/);
 
             if (existeCliente)
             {
                 throw new DuplicateIdentificationException($"Ya existe otro cliente con tipo '{entity.TipoIdentificacion}' y número '{entity.NumeroIdentificacion}'");
             }
 
-            //registrar fecha de actualización
-            entity.Estado = true;
-            entity.FechaCreacion = DateTime.Now;
+            var cliente = await _clienteRepo.ActualizarAsync(new Cliente());
 
-            return await _clienteRepo.ActualizarAsync(entity);
+            return new ClienteResponseDTO();
         }
 
         //crear cliente, activo por defecto
-        public async Task<Cliente> CrearAsync(Cliente entity)
+        public async Task<ClienteResponseDTO> CrearAsync(ClienteCreateDTO entity)
         {
             //reglas de negocio
 
@@ -114,21 +114,21 @@ namespace inaApp.Services
             {
                 throw new InvalidIdentificationException($"El tipo de identificación '{entity.TipoIdentificacion}' es inválido. Valores permitidos: 1 (Cédula Física), 2 (Cédula Jurídica), 3 (DIMEX), 4 (Pasaporte)");
             }
-            // 6. Validar que no exista otro cliente con la misma identificación
+            //validar que no exista otro cliente con el mismo tipo de identificacion y numero de identificacion
             var existeCliente = await _clienteRepo.ExistePorIdentificacionAsync(
                 entity.TipoIdentificacion,
-                entity.NumeroIdentificacion,
-                entity.IdCliente);
+                entity.NumeroIdentificacion/*,
+                entity.IdCliente);*/);
             if (existeCliente)
             {
                 throw new DuplicateIdentificationException($"Ya existe un cliente con tipo '{entity.TipoIdentificacion}' y número '{entity.NumeroIdentificacion}'");
             }
 
-            //asignar valores por defecto
-            entity.Estado = true;
-            entity.FechaCreacion = DateTime.Now;
+            //converit DTO a entity y guardar en l BD
+            var cliente = await _clienteRepo.CrearAsync(new Cliente());
 
-            return await _clienteRepo.CrearAsync(entity);
+            //converir entity a DTO Response y retornar ClienteResponseDTO
+            return new ClienteResponseDTO();
         }
 
         //eliminar cliente por id - borrado logico
@@ -145,7 +145,7 @@ namespace inaApp.Services
         }
 
         //obtener cliente por id y que este activo
-        public async Task<Cliente> ObtenerPorIdsAsync(int IdCliente)
+        public async Task<ClienteResponseDTO> ObtenerPorIdsAsync(int IdCliente)
         {
             //reglas de negocio
             var cliente = await _clienteRepo.ObtenerPorIdsAsync(IdCliente);
@@ -153,13 +153,14 @@ namespace inaApp.Services
             {
                 throw new NotFoundException($"Cliente con id: {IdCliente} no encontrado.");
             }
-            return cliente;
+            return new ClienteResponseDTO();
         }
 
         //obtener todos los clientes activos
-        public async Task<List<Cliente>> ObtenerTodosAsync()
+        public async Task<List<ClienteResponseDTO>> ObtenerTodosAsync()
         {
-            return await _clienteRepo.ObtenerTodosAsync();
+            var lista = await _clienteRepo.ObtenerTodosAsync();
+            return new List<ClienteResponseDTO>();
         }
 
         //mtodos auxiliares de validación
