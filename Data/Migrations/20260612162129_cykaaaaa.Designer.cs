@@ -12,8 +12,8 @@ using inaApp.Data;
 namespace inaApp.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260611155031_blyaaaa2")]
-    partial class blyaaaa2
+    [Migration("20260612162129_cykaaaaa")]
+    partial class cykaaaaa
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
