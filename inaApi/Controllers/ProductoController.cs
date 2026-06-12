@@ -1,5 +1,6 @@
 ﻿using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
+using inaApp.DTOs.Producto;
 using inaApp.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +11,10 @@ namespace inaApp.Api.Controllers
     [Route("api/[controller]")]
     public class ProductoController : Controller
     {
-        private readonly IGenericService<Producto> _productoService;
+        private readonly IGenericService<ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO> _productoService;
 
         //inyectar el servicio en el controlador
-        public ProductoController(IGenericService<Producto> productoServ)
+        public ProductoController(IGenericService<ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO> productoServ)
         {
             _productoService = productoServ;
         }
@@ -60,15 +61,14 @@ namespace inaApp.Api.Controllers
 
         //crear un nuevo producto
         [HttpPost("create")]
-        public async Task<ActionResult> Create([FromBody] Producto producto)
+        public async Task<ActionResult> Create([FromBody] ProductoCreateDTO productoDTO)
         {
             try
             {
-                producto.Estado = true;
 
                 if (!ModelState.IsValid) return BadRequest(ModelState);
 
-                var result = await _productoService.CrearAsync(producto);
+                var result = await _productoService.CrearAsync(productoDTO);
                 return Created("Producto creado", result);
             }
             catch (InvalidPriceException ex)
@@ -92,14 +92,13 @@ namespace inaApp.Api.Controllers
 
         //modificar un producto existente
         [HttpPatch("update/{id}")]
-        public async Task<ActionResult> EditAsync(int id, [FromBody] Producto producto)
+        public async Task<ActionResult> EditAsync(int id, [FromBody] ProductoUpdateDTO productoDTO)
         {
             try
             {
-                producto.Estado = true;
                 if (!ModelState.IsValid) return BadRequest(ModelState);
 
-                var result = await _productoService.ActualizarAsync(producto);
+                var result = await _productoService.ActualizarAsync(productoDTO);
                 return Ok(result);
             }
             catch (InvalidPriceException ex)

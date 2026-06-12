@@ -17,18 +17,18 @@ namespace inaApp.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int IdCliente { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "El tipo de identificacion es obligatorio")]
         public TipoIdentificacionEnum TipoIdentificacion { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "El numero de identificacion es obligatorio")]
         [MaxLength(20)]
         public string NumeroIdentificacion { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "El nombre es obligatorio")]
         [MaxLength(100)]
         public string Nombre { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "El primer apellido es obligatorio")]
         [MaxLength(50)]
         public string PrimerApellido { get; set; }
 

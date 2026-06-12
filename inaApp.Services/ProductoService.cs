@@ -1,5 +1,6 @@
 ﻿using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
+using inaApp.DTOs.Producto;
 using inaApp.Entities;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,8 @@ using System.Text;
 
 namespace inaApp.Services
 {
-    public class ProductoService : IGenericService<Producto>
+    public class ProductoService : IGenericService
+    <ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO>
     {
         //inyeccion de ProductoRepository EN ProductoService
         private readonly IGenericRepository<Producto> _productoRepo;
@@ -18,9 +20,9 @@ namespace inaApp.Services
             _productoRepo = productoRepo;
         }
 
-        public async Task<Producto> ActualizarAsync(Producto entity)
+        public async Task<ProductoResponseDTO> ActualizarAsync(ProductoUpdateDTO entity)
         {
-            /***[reglas de negocio]***/
+            //reglas de negocio
 
             //precio sea mayor a 0 - InvalidPriceException - BadRequest
             if (entity.Precio <= 0)
@@ -42,12 +44,14 @@ namespace inaApp.Services
             var producto = await _productoRepo.ObtenerTodosAsync();
             if (producto.Any(p => p.Nombre.ToLower() == entity.Nombre.ToLower() && p.Id != entity.Id))*/
 
-             return await _productoRepo.ActualizarAsync(entity);
+            var producto = await _productoRepo.ActualizarAsync(new Producto());
+
+            return new ProductoResponseDTO();
         }
 
-        public async Task<Producto> CrearAsync(Producto entity)
+        public async Task<ProductoResponseDTO> CrearAsync(ProductoCreateDTO entity)
         {
-            /***[reglas de negocio]***/
+            //reglas de negocio
 
             //precio sea mayor a 0 - InvalidPriceException - BadRequest
             if (entity.Precio <= 0)
@@ -64,9 +68,12 @@ namespace inaApp.Services
             {
                 throw new DuplicatedNameException($"El nombre de producto: {entity.Nombre} , ya existe.");
             }
-            
 
-            return await _productoRepo.CrearAsync(entity);
+            //converit DTO a entity y guardar en l BD
+            var producto = await _productoRepo.CrearAsync(new Producto());
+
+            //converir entity a DTO Response y retornar ProductoResponseDTO
+            return new ProductoResponseDTO();
         }
 
         public async Task<bool> EliminarAsync(int id)
@@ -82,7 +89,7 @@ namespace inaApp.Services
             return await _productoRepo.EliminarAsync(id);
         }
 
-        public async Task<Producto> ObtenerPorIdsAsync(int id)
+        public async Task<ProductoResponseDTO> ObtenerPorIdsAsync(int id)
         {
             //reglas de negocio
 
@@ -92,13 +99,14 @@ namespace inaApp.Services
                 throw new NotFoundException($"Producto con id: {id} no encontrado o nulo.");
             }
 
-            return producto;
+            return new ProductoResponseDTO();
         }
 
-        public async Task<List<Producto>> ObtenerTodosAsync()
+        public async Task<List<ProductoResponseDTO>> ObtenerTodosAsync()
         {
             //reglas de negocio
-            return await _productoRepo.ObtenerTodosAsync();
+            var lista = await _productoRepo.ObtenerTodosAsync();
+            return new List<ProductoResponseDTO>();
         }
     }
 }

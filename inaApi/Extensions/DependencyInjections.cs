@@ -19,7 +19,7 @@ namespace inaApp.Api.Extensions
              );
 
             //inyecciones de dependencias de servicios
-            services.AddScoped<IGenericService<Producto>, ProductoService>();
+            services.AddScoped<IGenericService<ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO>, ProductoService>();
             services.AddScoped<IGenericService<Cliente>, ClienteService>();
 
 

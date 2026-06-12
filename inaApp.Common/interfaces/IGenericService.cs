@@ -5,12 +5,12 @@ using System.Text;
 namespace inaApp.Common.interfaces
 {
     //parametrizar una interfaz generica para que pueda ser reutilizada con cualquier entidad
-    public interface IGenericService <E>
+    public interface IGenericService <TResponse, TCreate, TUpdate>
     {
-        Task<List<E>> ObtenerTodosAsync();
-        Task<E> ObtenerPorIdsAsync(int id);
-        Task<E> CrearAsync(E entity);
-        Task<E> ActualizarAsync(E entity);
+        Task<List<TResponse>> ObtenerTodosAsync();
+        Task<TResponse> ObtenerPorIdsAsync(int id);
+        Task<TResponse> CrearAsync(TCreate entity);
+        Task<TResponse> ActualizarAsync(TUpdate entity);
         Task<bool> EliminarAsync(int id);
     }
 }
