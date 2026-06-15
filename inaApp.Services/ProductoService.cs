@@ -70,10 +70,28 @@ namespace inaApp.Services
             }
 
             //converit DTO a entity y guardar en l BD
-            var producto = await _productoRepo.CrearAsync(new Producto());
+            Producto producto = new Producto
+            {
+                Nombre = entity.Nombre,
+                Precio = entity.Precio,
+                Descripcion = entity.Descripcion,
+                Stock = entity.Stock,
+                Estado = true
+            };
+
+
+            producto = await _productoRepo.CrearAsync(producto);
 
             //converir entity a DTO Response y retornar ProductoResponseDTO
-            return new ProductoResponseDTO();
+            ProductoResponseDTO productoResponse = new ProductoResponseDTO
+            {
+                Id = producto.Id,
+                Nombre = producto.Nombre,
+                Precio = producto.Precio,
+                Descripcion = producto.Descripcion,
+                Stock = producto.Stock
+            };
+            return productoResponse;
         }
 
         public async Task<bool> EliminarAsync(int id)
