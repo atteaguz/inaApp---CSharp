@@ -25,6 +25,6 @@ namespace inaApp.Entities
         [Required(ErrorMessage = "El stock es obligatorio")]
         [Range(1, int.MaxValue, ErrorMessage = "El stock no puede ser negativo")]
         public int Stock { get; set; }
-        public bool Estado { get; set; }
+        public bool Estado { get; set; } = true;
     }
 }

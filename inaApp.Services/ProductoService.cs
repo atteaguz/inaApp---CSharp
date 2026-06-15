@@ -47,9 +47,12 @@ namespace inaApp.Services
             var producto = await _productoRepo.ObtenerTodosAsync();
             if (producto.Any(p => p.Nombre.ToLower() == entity.Nombre.ToLower() && p.Id != entity.Id))*/
 
-            var producto = await _productoRepo.ActualizarAsync(new Producto());
+            //mapeo de DTO a entity
+            var producto = _mapper.Map<Producto>(entity);
+            producto = await _productoRepo.ActualizarAsync(new Producto());
 
-            return new ProductoResponseDTO();
+            var productoResponse = _mapper.Map<ProductoResponseDTO>(producto);
+            return productoResponse;
         }
 
         public async Task<ProductoResponseDTO> CrearAsync(ProductoCreateDTO entity)
@@ -124,14 +127,20 @@ namespace inaApp.Services
                 throw new NotFoundException($"Producto con id: {id} no encontrado o nulo.");
             }
 
-            return new ProductoResponseDTO();
+            //convertir Entity a DTOResponse
+            var productoResponse = _mapper.Map<ProductoResponseDTO>(producto);
+            return productoResponse;
+
         }
 
         public async Task<List<ProductoResponseDTO>> ObtenerTodosAsync()
         {
             //reglas de negocio
-            var lista = await _productoRepo.ObtenerTodosAsync();
-            return new List<ProductoResponseDTO>();
+            var listaProductos = await _productoRepo.ObtenerTodosAsync();
+
+            var listaDTOs = _mapper.Map<List<ProductoResponseDTO>>(listaProductos);
+
+            return listaDTOs;
         }
     }
 }
