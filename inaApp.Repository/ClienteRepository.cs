@@ -122,14 +122,14 @@ namespace inaApp.Repository
             }
         }
 
-        public async Task<bool> ExistePorIdentificacionAsync(TipoIdentificacionEnum tipoIdentificacion, string numeroIdentificacion)//, int? idExcluir = null)
+        public async Task<bool> ExistePorIdentificacionAsync(TipoIdentificacionEnum tipoIdentificacion, string numeroIdentificacion, int? idExcluir = null)
         {
             var query = _context.Cliente
                 .Where(c => c.TipoIdentificacion == tipoIdentificacion &&
                             c.NumeroIdentificacion == numeroIdentificacion);
 
-            /*if (idExcluir.HasValue)
-                query = query.Where(c => c.IdCliente != idExcluir.Value);*/
+            if (idExcluir.HasValue)
+                query = query.Where(c => c.IdCliente != idExcluir.Value);
 
             return await query.AnyAsync();
         }

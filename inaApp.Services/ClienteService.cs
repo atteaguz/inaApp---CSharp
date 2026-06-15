@@ -1,4 +1,5 @@
-﻿using inaApp.Common.Exceptions;
+﻿using AutoMapper;
+using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
 using inaApp.DTOs.Cliente;
 using inaApp.DTOs.Producto;
@@ -15,9 +16,11 @@ namespace inaApp.Services
     {
         //inyeccion de ClienteRepository
         private readonly IGenericRepository<Cliente> _clienteRepo;
-        public ClienteService(IGenericRepository<Cliente> clienteRepo)
+        private readonly IMapper _mapper;
+        public ClienteService(IGenericRepository<Cliente> clienteRepo, IMapper mapper)
         {
             _clienteRepo = clienteRepo;
+            _mapper = mapper;
         }
 
         //modificar cliente por id y que este activo
@@ -64,17 +67,19 @@ namespace inaApp.Services
 
             var existeCliente = await _clienteRepo.ExistePorIdentificacionAsync(
                 entity.TipoIdentificacion,
-                entity.NumeroIdentificacion/*,
-                entity.IdCliente);*/);
+                entity.NumeroIdentificacion,
+                entity.IdCliente);
 
             if (existeCliente)
             {
                 throw new DuplicateIdentificationException($"Ya existe otro cliente con tipo '{entity.TipoIdentificacion}' y número '{entity.NumeroIdentificacion}'");
             }
 
-            var cliente = await _clienteRepo.ActualizarAsync(new Cliente());
+            var cliente = _mapper.Map<Cliente>(entity);
+            cliente = await _clienteRepo.ActualizarAsync(new Cliente());
 
-            return new ClienteResponseDTO();
+            var clienteResponse = _mapper.Map<ClienteResponseDTO>(cliente);
+            return clienteResponse;
         }
 
         //crear cliente, activo por defecto
@@ -124,11 +129,14 @@ namespace inaApp.Services
                 throw new DuplicateIdentificationException($"Ya existe un cliente con tipo '{entity.TipoIdentificacion}' y número '{entity.NumeroIdentificacion}'");
             }
 
-            //converit DTO a entity y guardar en l BD
-            var cliente = await _clienteRepo.CrearAsync(new Cliente());
+            Cliente cliente = _mapper.Map<Cliente>(entity);
 
-            //converir entity a DTO Response y retornar ClienteResponseDTO
-            return new ClienteResponseDTO();
+            cliente = await _clienteRepo.CrearAsync(cliente);
+
+            //converir entity a DTO Response y retornar ProductoResponseDTO
+            ClienteResponseDTO clienteResponse = _mapper.Map<ClienteResponseDTO>(cliente);
+
+            return clienteResponse;
         }
 
         //eliminar cliente por id - borrado logico
@@ -153,14 +161,20 @@ namespace inaApp.Services
             {
                 throw new NotFoundException($"Cliente con id: {IdCliente} no encontrado.");
             }
-            return new ClienteResponseDTO();
+
+            //convertir Entity a DTOResponse
+            var clienteResponse = _mapper.Map<ClienteResponseDTO>(cliente);
+            return clienteResponse;
         }
 
         //obtener todos los clientes activos
         public async Task<List<ClienteResponseDTO>> ObtenerTodosAsync()
         {
-            var lista = await _clienteRepo.ObtenerTodosAsync();
-            return new List<ClienteResponseDTO>();
+            var listaClientes = await _clienteRepo.ObtenerTodosAsync();
+
+            var listaDTOs = _mapper.Map<List<ClienteResponseDTO>>(listaClientes);
+
+            return listaDTOs;
         }
 
         //mtodos auxiliares de validación
