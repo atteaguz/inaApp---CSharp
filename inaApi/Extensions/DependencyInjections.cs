@@ -6,6 +6,7 @@ using inaApp.Entities;
 using inaApp.Repository;
 using inaApp.Services;
 using Microsoft.EntityFrameworkCore;
+using inaApp.Services.Mapping;
 
 namespace inaApp.Api.Extensions
 {
@@ -18,6 +19,10 @@ namespace inaApp.Api.Extensions
                 options.UseSqlServer
                 (configuration.GetConnectionString("DefaultConnection"))
              );
+
+            //inyeccion de AutoMapper
+            services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
+
 
             //inyecciones de dependencias de servicios
             services.AddScoped<IGenericService<ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO>, ProductoService>();

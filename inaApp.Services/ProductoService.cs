@@ -1,4 +1,5 @@
-﻿using inaApp.Common.Exceptions;
+﻿using AutoMapper;
+using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
 using inaApp.DTOs.Producto;
 using inaApp.Entities;
@@ -14,10 +15,12 @@ namespace inaApp.Services
     {
         //inyeccion de ProductoRepository EN ProductoService
         private readonly IGenericRepository<Producto> _productoRepo;
+        private readonly IMapper _mapper;
 
-        public ProductoService(IGenericRepository<Producto> productoRepo)
+        public ProductoService(IGenericRepository<Producto> productoRepo, IMapper mapper)
         {
             _productoRepo = productoRepo;
+            _mapper = mapper;
         }
 
         public async Task<ProductoResponseDTO> ActualizarAsync(ProductoUpdateDTO entity)
@@ -70,27 +73,31 @@ namespace inaApp.Services
             }
 
             //converit DTO a entity y guardar en l BD
-            Producto producto = new Producto
-            {
-                Nombre = entity.Nombre,
-                Precio = entity.Precio,
-                Descripcion = entity.Descripcion,
-                Stock = entity.Stock,
-                Estado = true
-            };
+            //Producto producto = new Producto
+            //{
+            //    Nombre = entity.Nombre,
+            //    Precio = entity.Precio,
+            //    Descripcion = entity.Descripcion,
+            //    Stock = entity.Stock,
+            //    Estado = true
+            //};
 
+            //convertir de DTO a Entidad
+            Producto producto = _mapper.Map<Producto>(entity);
 
             producto = await _productoRepo.CrearAsync(producto);
 
             //converir entity a DTO Response y retornar ProductoResponseDTO
-            ProductoResponseDTO productoResponse = new ProductoResponseDTO
-            {
-                Id = producto.Id,
-                Nombre = producto.Nombre,
-                Precio = producto.Precio,
-                Descripcion = producto.Descripcion,
-                Stock = producto.Stock
-            };
+            ProductoResponseDTO productoResponse = _mapper.Map<ProductoResponseDTO>(producto);
+
+            //{
+            //    Id = producto.Id,
+            //    Nombre = producto.Nombre,
+            //    Precio = producto.Precio,
+            //    Descripcion = producto.Descripcion,
+            //    Stock = producto.Stock
+            //};
+
             return productoResponse;
         }
 
