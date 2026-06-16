@@ -4,7 +4,7 @@ using System.Text;
 
 namespace inaApp.DTOs.Categoria
 {
-    public class CategoriaResponse
+    public class CategoriaUpdateDTO
     {
     }
 }

@@ -128,6 +128,7 @@ namespace inaApp.Repository
             }
         }
 
+        //no se usa
         public async Task<bool> ExistePorIdentificacionAsync(TipoIdentificacionEnum tipoIdentificacion, string numeroIdentificacion, int? idExcluir = null)
         {
             throw new NotImplementedException();
