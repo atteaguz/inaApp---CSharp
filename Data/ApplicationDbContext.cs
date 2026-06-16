@@ -16,17 +16,16 @@ namespace inaApp.Data
         public DbSet<Cliente> Cliente { get; set; }
 
         //fluent api
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
-
+            //relacion entre Producto y Categoria
+            modelBuilder.Entity<Producto>()
+                .HasOne(p => p.Categoria)
+                .WithMany(c => c.Productos)
+                .HasForeignKey(p => p.CategoriaId);
 
             base.OnModelCreating(modelBuilder);
         }
 
-
-
-
-    }
+    } 
 }
