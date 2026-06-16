@@ -2,6 +2,7 @@
 using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
 using inaApp.DTOs.Producto;
+using inaApp.Common.Response;
 using inaApp.Entities;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace inaApp.Services
             _mapper = mapper;
         }
 
-        public async Task<ProductoResponseDTO> ActualizarAsync(ProductoUpdateDTO entity)
+        public async Task<Response<ProductoResponseDTO>> ActualizarAsync(ProductoUpdateDTO entity)
         {
             //reglas de negocio
 
@@ -49,13 +50,17 @@ namespace inaApp.Services
 
             //mapeo de DTO a entity
             var producto = _mapper.Map<Producto>(entity);
-            producto = await _productoRepo.ActualizarAsync(new Producto());
+            producto = await _productoRepo.ActualizarAsync(producto);
 
-            var productoResponse = _mapper.Map<ProductoResponseDTO>(producto);
-            return productoResponse;
+            return new Response<ProductoResponseDTO>
+            {
+                Data = _mapper.Map<ProductoResponseDTO>(producto),
+                Message = "Producto Actualizado",
+                Success = true
+            }; 
         }
 
-        public async Task<ProductoResponseDTO> CrearAsync(ProductoCreateDTO entity)
+        public async Task<Response<ProductoResponseDTO>> CrearAsync(ProductoCreateDTO entity)
         {
             //reglas de negocio
 
@@ -91,7 +96,6 @@ namespace inaApp.Services
             producto = await _productoRepo.CrearAsync(producto);
 
             //converir entity a DTO Response y retornar ProductoResponseDTO
-            ProductoResponseDTO productoResponse = _mapper.Map<ProductoResponseDTO>(producto);
 
             //{
             //    Id = producto.Id,
@@ -101,10 +105,14 @@ namespace inaApp.Services
             //    Stock = producto.Stock
             //};
 
-            return productoResponse;
+            return new Response<ProductoResponseDTO>
+            { Data = _mapper.Map<ProductoResponseDTO>(producto),
+                Message = "Producto Creado",
+                Success = true,
+            }; 
         }
 
-        public async Task<bool> EliminarAsync(int id)
+        public async Task<Response<bool>> EliminarAsync(int id)
         {
             //reglas de negocio
 
@@ -114,10 +122,15 @@ namespace inaApp.Services
                 throw new NotFoundException($"Error al eliminar: Producto con id: {id} no encontrado o nulo.");
             }
 
-            return await _productoRepo.EliminarAsync(id);
+            return new Response<bool>
+            {
+                Data = await _productoRepo.EliminarAsync(id),
+                Message = "Producto Eliminado",
+                Success = true,
+            };
         }
 
-        public async Task<ProductoResponseDTO> ObtenerPorIdsAsync(int id)
+        public async Task<Response<ProductoResponseDTO>> ObtenerPorIdsAsync(int id)
         {
             //reglas de negocio
 
@@ -128,19 +141,24 @@ namespace inaApp.Services
             }
 
             //convertir Entity a DTOResponse
-            var productoResponse = _mapper.Map<ProductoResponseDTO>(producto);
-            return productoResponse;
-
+            return new Response<ProductoResponseDTO>
+            {
+                Data = _mapper.Map<ProductoResponseDTO>(producto),
+                Message = "Producto Obtenido",
+                Success = true
+            };
         }
 
-        public async Task<List<ProductoResponseDTO>> ObtenerTodosAsync()
+        public async Task<Response<List<ProductoResponseDTO>>> ObtenerTodosAsync()
         {
             //reglas de negocio
             var listaProductos = await _productoRepo.ObtenerTodosAsync();
 
-            var listaDTOs = _mapper.Map<List<ProductoResponseDTO>>(listaProductos);
-
-            return listaDTOs;
+            return new Response<List<ProductoResponseDTO>>
+            { Data = _mapper.Map<List<ProductoResponseDTO>>(listaProductos),
+            Message = "Productos Obtenidos",
+            Success = true
+            };
         }
     }
 }
