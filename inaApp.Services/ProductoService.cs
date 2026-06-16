@@ -160,8 +160,6 @@ namespace inaApp.Services
                 throw new NotFoundException("No se encontraron productos");
             }
 
-
-
             return new Response<List<ProductoResponseDTO>>
             { Data = _mapper.Map<List<ProductoResponseDTO>>(listaProductos),
             Message = "Productos Obtenidos",
