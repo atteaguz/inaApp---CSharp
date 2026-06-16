@@ -7,6 +7,7 @@ using inaApp.Repository;
 using inaApp.Services;
 using Microsoft.EntityFrameworkCore;
 using inaApp.Services.Mapping;
+using inaApp.DTOs.Categoria;
 
 namespace inaApp.Api.Extensions
 {
@@ -27,11 +28,13 @@ namespace inaApp.Api.Extensions
             //inyecciones de dependencias de servicios
             services.AddScoped<IGenericService<ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO>, ProductoService>();
             services.AddScoped<IGenericService<ClienteResponseDTO, ClienteCreateDTO, ClienteUpdateDTO>, ClienteService>();
+            services.AddScoped<IGenericService<CategoriaResponseDTO, CategoriaUpdateDTO, CategoriaCreateDTO>, CategoriaService>();
 
 
             //inyecciones de dependencias de repositorios
             services.AddScoped<IGenericRepository<Producto>, ProductoRepository>();
             services.AddScoped<IGenericRepository<Cliente>, ClienteRepository>();
+            services.AddScoped<IGenericRepository<Categoria>, CategoriaRepository>();
 
 
             return services;

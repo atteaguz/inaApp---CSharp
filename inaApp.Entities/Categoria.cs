@@ -13,7 +13,7 @@ namespace inaApp.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required]
+        [Required (ErrorMessage = "El nombre es obligatorio")]
         [StringLength(150, ErrorMessage = "El nombre no puede superar los 150 caracteres.")]
         public string Nombre { get; set; }
 
