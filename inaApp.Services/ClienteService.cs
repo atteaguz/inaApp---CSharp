@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
+using inaApp.Common.Response;
 using inaApp.DTOs.Cliente;
 using inaApp.DTOs.Producto;
 using inaApp.Entities;
@@ -12,7 +13,8 @@ using static inaApp.Common.Enums.Enumeradores;
 
 namespace inaApp.Services
 {
-    public class ClienteService : IGenericService<ClienteResponseDTO, ClienteCreateDTO, ClienteUpdateDTO>
+    public class ClienteService : IGenericService
+    <ClienteResponseDTO, ClienteCreateDTO, ClienteUpdateDTO>
     {
         //inyeccion de ClienteRepository
         private readonly IGenericRepository<Cliente> _clienteRepo;
@@ -24,7 +26,7 @@ namespace inaApp.Services
         }
 
         //modificar cliente por id y que este activo
-        public async Task<ClienteResponseDTO> ActualizarAsync(ClienteUpdateDTO entity)
+        public async Task<Response<ClienteResponseDTO>> ActualizarAsync(ClienteUpdateDTO entity)
         {
             //reglas de negocio
 
@@ -76,14 +78,18 @@ namespace inaApp.Services
             }
 
             var cliente = _mapper.Map<Cliente>(entity);
-            cliente = await _clienteRepo.ActualizarAsync(new Cliente());
+            cliente = await _clienteRepo.ActualizarAsync(cliente);
 
-            var clienteResponse = _mapper.Map<ClienteResponseDTO>(cliente);
-            return clienteResponse;
+            return new Response<ClienteResponseDTO>
+            {
+                Data = _mapper.Map<ClienteResponseDTO>(cliente),
+                Message = "Cliente Actualizado",
+                Success = true
+            };
         }
 
         //crear cliente, activo por defecto
-        public async Task<ClienteResponseDTO> CrearAsync(ClienteCreateDTO entity)
+        public async Task<Response<ClienteResponseDTO>> CrearAsync(ClienteCreateDTO entity)
         {
             //reglas de negocio
 
@@ -134,13 +140,16 @@ namespace inaApp.Services
             cliente = await _clienteRepo.CrearAsync(cliente);
 
             //converir entity a DTO Response y retornar ProductoResponseDTO
-            ClienteResponseDTO clienteResponse = _mapper.Map<ClienteResponseDTO>(cliente);
-
-            return clienteResponse;
+            return new Response<ClienteResponseDTO>
+            {
+                Data = _mapper.Map<ClienteResponseDTO>(cliente),
+                Message = "Cliente Creado",
+                Success = true,
+            };
         }
 
         //eliminar cliente por id - borrado logico
-        public async Task<bool> EliminarAsync(int IdCliente)
+        public async Task<Response<bool>> EliminarAsync(int IdCliente)
         {
             //reglas de negocio
 
@@ -149,11 +158,16 @@ namespace inaApp.Services
             {
                 throw new NotFoundException($"Error al eliminar: Cliente con id: {IdCliente} no encontrado o nulo.");
             }
-            return await _clienteRepo.EliminarAsync(IdCliente);
+            return new Response<bool>
+            {
+                Data = await _clienteRepo.EliminarAsync(IdCliente),
+                Message = "Cliente Eliminado",
+                Success = true,
+            };
         }
 
         //obtener cliente por id y que este activo
-        public async Task<ClienteResponseDTO> ObtenerPorIdsAsync(int IdCliente)
+        public async Task<Response<ClienteResponseDTO>> ObtenerPorIdsAsync(int IdCliente)
         {
             //reglas de negocio
             var cliente = await _clienteRepo.ObtenerPorIdsAsync(IdCliente);
@@ -163,24 +177,31 @@ namespace inaApp.Services
             }
 
             //convertir Entity a DTOResponse
-            var clienteResponse = _mapper.Map<ClienteResponseDTO>(cliente);
-            return clienteResponse;
+            return new Response<ClienteResponseDTO>
+            {
+                Data = _mapper.Map<ClienteResponseDTO>(cliente),
+                Message = "Cliente Obtenido",
+                Success = true
+            };
         }
 
         //obtener todos los clientes activos
-        public async Task<List<ClienteResponseDTO>> ObtenerTodosAsync()
+        public async Task<Response<List<ClienteResponseDTO>>> ObtenerTodosAsync()
         {
             var listaClientes = await _clienteRepo.ObtenerTodosAsync();
 
             //validar que la lista no este vacia
             if (!listaClientes.Any())
             {
-                throw new NotFoundException("No se encontraron productos");
+                throw new NotFoundException("No se encontraron clientes");
             }
 
-            var listaDTOs = _mapper.Map<List<ClienteResponseDTO>>(listaClientes);
-
-            return listaDTOs;
+            return new Response<List<ClienteResponseDTO>>
+            {
+                Data = _mapper.Map<List<ClienteResponseDTO>>(listaClientes),
+                Message = "Clientes Obtenidos",
+                Success = true
+            };
         }
 
         //mtodos auxiliares de validación

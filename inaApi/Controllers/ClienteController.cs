@@ -30,6 +30,10 @@ namespace inaApp.Api.Controllers
                 var lista = await _clienteService.ObtenerTodosAsync();
                 return Ok(lista);
             }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
             catch (Exception)
             {
                 return StatusCode(500, "Error interno del servidor. Contacte con el administrador");
