@@ -25,17 +25,15 @@ namespace inaApp.Api.Controllers
         {
             try
             {
-                var lista = await _productoService.ObtenerTodosAsync();
-
-                if (lista.Count == 0) {
-                    return NotFound("No hay productos disponibles");
-                }
-
-                return Ok(lista);
+                var response = await _productoService.ObtenerTodosAsync();
+                return Ok(response);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (Exception)
             {
-
                 return StatusCode(500, "Error interno del servidor. Contacte con el administrador");
             }
         }
@@ -68,8 +66,8 @@ namespace inaApp.Api.Controllers
 
                 if (!ModelState.IsValid) return BadRequest(ModelState);
 
-                var result = await _productoService.CrearAsync(productoDTO);
-                return Created("Producto creado", result);
+                var response = await _productoService.CrearAsync(productoDTO);
+                return Created("Producto creado", response);
             }
             catch (InvalidPriceException ex)
             {
@@ -98,8 +96,8 @@ namespace inaApp.Api.Controllers
             {
                 if (!ModelState.IsValid) return BadRequest(ModelState);
 
-                var result = await _productoService.ActualizarAsync(productoDTO);
-                return Ok(result);
+                var response = await _productoService.ActualizarAsync(productoDTO);
+                return Ok(response);
             }
             catch (InvalidPriceException ex)
             {
@@ -124,11 +122,9 @@ namespace inaApp.Api.Controllers
         public async Task<ActionResult> Delete(int id)
         {
             try
-            {
-                //if (id <= 0) { return BadRequest("Error al eliminar, id incorrecto");}
-                
-                var result = await _productoService.EliminarAsync(id);
-                return Ok("Producto eliminado.");
+            {        
+                var response = await _productoService.EliminarAsync(id);
+                return response.Data ? Ok(response) : BadRequest(response);
             }
             catch (NotFoundException ex)
             {

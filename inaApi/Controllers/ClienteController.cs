@@ -28,11 +28,6 @@ namespace inaApp.Api.Controllers
             try
             {
                 var lista = await _clienteService.ObtenerTodosAsync();
-
-                if (lista.Count == 0)
-                {
-                    return NotFound("No hay clientes disponibles");
-                }
                 return Ok(lista);
             }
             catch (Exception)

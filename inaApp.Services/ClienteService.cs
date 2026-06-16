@@ -172,6 +172,12 @@ namespace inaApp.Services
         {
             var listaClientes = await _clienteRepo.ObtenerTodosAsync();
 
+            //validar que la lista no este vacia
+            if (!listaClientes.Any())
+            {
+                throw new NotFoundException("No se encontraron productos");
+            }
+
             var listaDTOs = _mapper.Map<List<ClienteResponseDTO>>(listaClientes);
 
             return listaDTOs;

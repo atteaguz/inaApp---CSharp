@@ -154,6 +154,14 @@ namespace inaApp.Services
             //reglas de negocio
             var listaProductos = await _productoRepo.ObtenerTodosAsync();
 
+            //validar que la lista no este vacia
+            if(!listaProductos.Any())
+            {
+                throw new NotFoundException("No se encontraron productos");
+            }
+
+
+
             return new Response<List<ProductoResponseDTO>>
             { Data = _mapper.Map<List<ProductoResponseDTO>>(listaProductos),
             Message = "Productos Obtenidos",
