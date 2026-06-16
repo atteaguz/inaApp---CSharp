@@ -28,7 +28,7 @@ namespace inaApp.Entities
         public bool Estado { get; set; } = true;
 
         //relacion entre Producto y Categoria - * a 1
-        public int CategoriaId { get; set; }​
+        public int CategoriaId { get; set; }
         public Categoria Categoria​ { get; set; } = null!;
     }
 }
