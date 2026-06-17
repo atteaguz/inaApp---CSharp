@@ -34,11 +34,6 @@ namespace inaApp.Repository
                 _context.Producto.Update(producto);
                 await _context.SaveChangesAsync();
                 return producto;
-
-                /*
-                _context.Producto.Update(entity);
-                await _context.SaveChangesAsync();
-                return entity;*/
             }
             catch (Exception ex)
             {
@@ -122,7 +117,10 @@ namespace inaApp.Repository
         {
             try
             {
-                return await _context.Producto.AsNoTracking().Where(p => p.Nombre == nombre && p.Estado == true).SingleOrDefaultAsync();
+                return await _context.Producto
+                    .AsNoTracking()
+                    .Where(p => p.Nombre == nombre && p.Estado == true)
+                    .SingleOrDefaultAsync();
             }
             catch (Exception ex)
             {
