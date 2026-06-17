@@ -1,11 +1,9 @@
 ﻿using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
 using inaApp.DTOs.Categoria;
-using inaApp.DTOs.Producto;
-using inaApp.Entities;
-using inaApp.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace inaApp.Api.Controllers
 {
@@ -20,7 +18,7 @@ namespace inaApp.Api.Controllers
             _categoriaService = categoriaService;
         }
 
-        //obtener todos los productos
+        //obtener todas las categorias
         [HttpGet("getall")]
         public async Task<ActionResult> IndexAsync()
         {
@@ -39,28 +37,83 @@ namespace inaApp.Api.Controllers
             }
         }
 
-        //obtener una categoria por id
+        //obtener categoria por id
         [HttpGet("getbyid/{id}")]
         public async Task<ActionResult> Details(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var response = await _categoriaService.ObtenerPorIdsAsync(id);
+                return Ok(response);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor. Contacte con el administrador");
+            }
         }
 
-        //crear una nueva categoria
+        //crear nueva categoria
         [HttpPost("create")]
         public async Task<ActionResult> Create([FromBody] CategoriaCreateDTO categoriaDTO)
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+
+                var response = await _categoriaService.CrearAsync(categoriaDTO);
+                return Created("Categoria creada", response);
+            }
+            catch (RequiredFieldMissingException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DuplicatedNameException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor. Contacte con el administrador");
+            }
         }
 
-        //modificar una categroia existente
+        //actualizar categoria axistente
         [HttpPatch("update/{id}")]
         public async Task<ActionResult> EditAsync(int id, [FromBody] CategoriaUpdateDTO categoriaDTO)
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (id != categoriaDTO.Id)
+                    return BadRequest("El ID de la URL no coincide con el ID del cuerpo");
+
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+
+                var response = await _categoriaService.ActualizarAsync(categoriaDTO);
+                return Ok(response);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (RequiredFieldMissingException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DuplicatedNameException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor. Contacte con el administrador");
+            }
         }
 
-        //eliminar una categoria existente - borrado logico
+        //borrado logico de categoria existente
         [HttpDelete("delete/{id}")]
         public async Task<ActionResult> Delete(int id)
         {
@@ -73,7 +126,7 @@ namespace inaApp.Api.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, "Error interno del servidor. Contacte con el administrador");
             }
