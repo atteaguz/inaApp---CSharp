@@ -25,6 +25,7 @@ namespace inaApp.Repository
                 return await _context.Categoria
                     .AsNoTracking()
                     .Include(c => c.Productos)
+                    .Where(p => p.Estado == true)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -40,6 +41,7 @@ namespace inaApp.Repository
                 return await _context.Categoria
                     .AsNoTracking()
                     .Include(c => c.Productos)
+                    .Where(p => p.Id == id && p.Estado == true)
                     .FirstOrDefaultAsync(c => c.Id == id);
             }
             catch (Exception ex)
