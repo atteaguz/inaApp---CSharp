@@ -87,12 +87,11 @@ namespace inaApp.Repository
         {
             try
             {
-                return await _context.Producto.AsNoTracking().Where(p => p.Id == id && p.Estado == true).SingleOrDefaultAsync();
-                /*if (entity is null)
-                {
-                    throw new Exception("No se encontro la entidad");
-                }
-                return entity;*/
+                return await _context.Producto
+                    .AsNoTracking()
+                    .Include(p => p.Categoria)
+                    .Where(p => p.Id == id && p.Estado == true)
+                    .SingleOrDefaultAsync();
             }
             catch (DbUpdateException ex)
             {
@@ -105,7 +104,11 @@ namespace inaApp.Repository
         {
             try
             {
-                return await _context.Producto.AsNoTracking().Where(p => p.Estado == true).ToListAsync();
+                return await _context.Producto
+                    .AsNoTracking()
+                    .Include(p => p.Categoria)
+                    .Where(p => p.Estado == true)
+                    .ToListAsync();
             }
             catch (Exception ex)
             {
@@ -128,8 +131,8 @@ namespace inaApp.Repository
             }
         }
 
-        //no se usa
-        public async Task<bool> ExistePorIdentificacionAsync(TipoIdentificacionEnum tipoIdentificacion, string numeroIdentificacion, int? idExcluir = null)
+        //no se usa en Producto
+        public Task<bool> ExistePorIdentificacionAsync(TipoIdentificacionEnum tipoIdentificacion, string numeroIdentificacion, int? idExcluir = null)
         {
             throw new NotImplementedException();
         }
