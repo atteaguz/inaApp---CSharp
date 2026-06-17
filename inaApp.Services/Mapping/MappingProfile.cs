@@ -21,7 +21,7 @@ namespace inaApp.Services.Mapping
             //DTOUpdate a Entidad
             CreateMap<ProductoUpdateDTO, Producto>();
             CreateMap<ClienteUpdateDTO, Cliente>();
-            CreateMap<CategoriaCreateDTO, Categoria>();
+            CreateMap<CategoriaUpdateDTO, Categoria>();
 
             //Entidad a DTO
             CreateMap<Producto, ProductoResponseDTO>()
