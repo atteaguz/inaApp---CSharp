@@ -26,5 +26,8 @@ namespace inaApp.DTOs.Producto
         [Required(ErrorMessage = "El stock es obligatorio")]
         [Range(1, int.MaxValue, ErrorMessage = "El stock no puede ser negativo")]
         public int Stock { get; set; }
+
+        [Required(ErrorMessage = "La categoría es obligatoria")]
+        public int CategoriaId { get; set; }
     }
 }
