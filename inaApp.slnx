@@ -4,6 +4,7 @@
   <Project Path="inaApp.Common/inaApp.Common.csproj" />
   <Project Path="inaApp.DTOs/inaApp.DTOs.csproj" Id="3f2399f2-2f45-4819-988f-18325382bcae" />
   <Project Path="inaApp.Entities/inaApp.Entities.csproj" />
+  <Project Path="InaApp.ProyectoINAApp/InaApp.ProyectoINAApp.csproj" Id="b20143bd-a170-413a-b776-35ce7a6e04c0" />
   <Project Path="inaApp.Repository/inaApp.Repository.csproj" />
   <Project Path="inaApp.Services/inaApp.Services.csproj" />
 </Solution>
