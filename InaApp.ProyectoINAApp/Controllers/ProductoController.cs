@@ -1,6 +1,8 @@
-﻿using inaApp.Common.Exceptions;
+﻿using AutoMapper;
+using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
 using inaApp.DTOs.Producto;
+using InaApp.ProyectoINAApp.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,10 +12,12 @@ namespace InaApp.ProyectoINAApp.Controllers
     {
 
         private readonly IGenericService<ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO> _productoService;
+        private readonly IMapper _mapper;
 
-        public ProductoController(IGenericService<ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO> productoServ)
+        public ProductoController(IGenericService<ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO> productoServ, IMapper mapper)
         {
             _productoService = productoServ;
+            _mapper = mapper;
         }
 
 
@@ -22,10 +26,13 @@ namespace InaApp.ProyectoINAApp.Controllers
         {
             try
             {
-                //obtener todos los productos
+                //obtener todos los productosL
                 var lista = await _productoService.ObtenerTodosAsync();
 
-                return View();
+                var listaViewModel = _mapper.Map<List<ProductoIndexViewModel>>(lista.Data);
+
+                //lista productos se pasa a la vista por el model
+                return View(listaViewModel);
             }
             catch (NotFoundException)
             {
@@ -33,12 +40,9 @@ namespace InaApp.ProyectoINAApp.Controllers
                 return View();
             }
             catch (Exception ex){
-                
+                ViewBag.Message = "[ERROR] al cargar la pagina";
+                return View();
             }
-            
-
-
-            
         }
 
         // GET: ProductoController/Details/5
