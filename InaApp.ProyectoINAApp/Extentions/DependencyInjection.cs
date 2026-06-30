@@ -6,6 +6,7 @@ using inaApp.DTOs.Producto;
 using inaApp.Entities;
 using inaApp.Repository;
 using inaApp.Services;
+using inaApp.Services.Mapping;
 using Microsoft.EntityFrameworkCore;
 
 namespace InaApp.ProyectoINAApp.Extentions
@@ -21,7 +22,7 @@ namespace InaApp.ProyectoINAApp.Extentions
              );
 
             //inyeccion de AutoMapper
-            //services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
+            services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
 
             //inyecciones de dependencias de servicios
             services.AddScoped<IGenericService<ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO>, ProductoService>();

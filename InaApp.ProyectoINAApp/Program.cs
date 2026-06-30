@@ -1,7 +1,10 @@
+using InaApp.ProyectoINAApp.Extentions;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddAplicationServices(builder.Configuration);
 
 var app = builder.Build();
 
