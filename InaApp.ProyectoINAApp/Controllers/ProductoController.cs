@@ -1,14 +1,44 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using inaApp.Common.Exceptions;
+using inaApp.Common.interfaces;
+using inaApp.DTOs.Producto;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InaApp.ProyectoINAApp.Controllers
 {
     public class ProductoController : Controller
     {
-        // GET: ProductoController
-        public ActionResult Index()
+
+        private readonly IGenericService<ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO> _productoService;
+
+        public ProductoController(IGenericService<ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO> productoServ)
         {
-            return View();
+            _productoService = productoServ;
+        }
+
+
+        // GET: ProductoController
+        public async Task<ActionResult> Index()
+        {
+            try
+            {
+                //obtener todos los productos
+                var lista = await _productoService.ObtenerTodosAsync();
+
+                return View();
+            }
+            catch (NotFoundException)
+            {
+                ViewBag.Message = "No hay Productos disponibles.";
+                return View();
+            }
+            catch (Exception ex){
+                
+            }
+            
+
+
+            
         }
 
         // GET: ProductoController/Details/5
