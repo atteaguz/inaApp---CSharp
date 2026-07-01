@@ -109,10 +109,26 @@ namespace InaApp.ProyectoINAApp.Controllers
         // POST: ProductoController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<ActionResult> EditAsync(ProductoEditViewModel productoEditVM)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return View(productoEditVM);
+                }
+
+                var productoDTO = _mapper.Map<ProductoUpdateDTO>(productoEditVM);
+
+                var response = await _productoService.ActualizarAsync(productoDTO);
+
+                if (!response.Success)
+                {
+                    ModelState.AddModelError("", response.Message);
+                    return View(productoEditVM);
+                }
+
+                TempData["Mensaje"] = "Producto modificado exitosamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch
