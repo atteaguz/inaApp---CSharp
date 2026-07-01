@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using inaApp.DTOs.Producto;
-using InaApp.ProyectoINAApp.Models;
+using InaApp.ProyectoINAApp.Models.Producto;
 
 namespace InaApp.ProyectoINAApp.Mapping
 {

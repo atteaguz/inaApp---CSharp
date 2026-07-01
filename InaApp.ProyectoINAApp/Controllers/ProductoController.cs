@@ -2,7 +2,7 @@
 using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
 using inaApp.DTOs.Producto;
-using InaApp.ProyectoINAApp.Models;
+using InaApp.ProyectoINAApp.Models.Producto;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -52,6 +52,7 @@ namespace InaApp.ProyectoINAApp.Controllers
         }
 
         // GET: ProductoController/Create
+        [HttpGet]
         public ActionResult Create()
         {
             return View();
