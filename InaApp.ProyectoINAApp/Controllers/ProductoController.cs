@@ -138,18 +138,37 @@ namespace InaApp.ProyectoINAApp.Controllers
         }
 
         // GET: ProductoController/Delete/5
-        public ActionResult Delete(int id)
+        [HttpGet]
+        public async Task<ActionResult> DeleteAsync(int id)
         {
-            return View();
+            var response = await _productoService.ObtenerPorIdsAsync(id);
+
+            if (!response.Success)
+            {
+                TempData["Error"] = response.Message;
+                return RedirectToAction(nameof(Index));
+            }
+
+            var productoVM = _mapper.Map<ProductoIndexViewModel>(response.Data);
+            return View(productoVM);
         }
 
         // POST: ProductoController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> DeleteConfirmed(int id)
         {
             try
             {
+                var response = await _productoService.EliminarAsync(id);
+
+                if (!response.Success)
+                {
+                    TempData["Error"] = response.Message;
+                    return RedirectToAction(nameof(Index));
+                }
+
+                TempData["Mensaje"] = "Producto eliminado exitosamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch
