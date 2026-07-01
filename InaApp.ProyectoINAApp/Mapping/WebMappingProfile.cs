@@ -10,11 +10,12 @@ namespace InaApp.ProyectoINAApp.Mapping
         {
             //DTO a ViewModel
             CreateMap<ProductoResponseDTO, ProductoIndexViewModel>();
+            CreateMap<ProductoResponseDTO, ProductoEditViewModel>();
 
             //ViewModel a DTO
             CreateMap<ProductoIndexViewModel, ProductoResponseDTO>();
             CreateMap<ProductoCreateViewModel, ProductoCreateDTO>();
-            //CreateMap<ProductoUpdateViewModel, ProductoUpdateDTO>();
+            CreateMap<ProductoEditViewModel, ProductoUpdateDTO>();
         }
     }
 }

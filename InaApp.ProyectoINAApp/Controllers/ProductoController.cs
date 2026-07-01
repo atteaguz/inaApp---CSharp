@@ -92,9 +92,18 @@ namespace InaApp.ProyectoINAApp.Controllers
         }
 
         // GET: ProductoController/Edit/5
-        public ActionResult Edit(int id)
+        [HttpGet]
+        public async Task<ActionResult> EditAsync(int id)
         {
-            return View();
+            var response = await _productoService.ObtenerPorIdsAsync(id);
+
+            if (!response.Success) { 
+                TempData["Error"] = response.Message;
+                return RedirectToAction(nameof(Index));
+            }
+
+            var productoVM = _mapper.Map<ProductoEditViewModel>(response.Data);
+            return View(productoVM);
         }
 
         // POST: ProductoController/Edit/5
