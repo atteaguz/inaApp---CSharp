@@ -46,9 +46,18 @@ namespace InaApp.ProyectoINAApp.Controllers
         }
 
         // GET: ProductoController/Details/5
-        public ActionResult Details(int id)
+        public async Task<ActionResult> DetailsAsync(int id)
         {
-            return View();
+            var response = await _productoService.ObtenerPorIdsAsync(id);
+
+            if (!response.Success)
+            {
+                TempData["Error"] = response.Message;
+                return RedirectToAction(nameof(Index));
+            }
+
+            var productoVM = _mapper.Map<ProductoIndexViewModel>(response.Data);
+            return View(productoVM);
         }
 
         // GET: ProductoController/Create
