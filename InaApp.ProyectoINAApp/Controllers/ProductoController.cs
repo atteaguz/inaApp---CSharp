@@ -61,10 +61,28 @@ namespace InaApp.ProyectoINAApp.Controllers
         // POST: ProductoController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> CreateAsync(ProductoCreateViewModel productoVM)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return View(productoVM);
+                }
+
+                //mappear el viewmodel a DTO
+                var productoDTO = _mapper.Map<ProductoCreateDTO>(productoVM);
+
+                //llamar al servicio para crear el producto
+                var response = await _productoService.CrearAsync(productoDTO);
+
+                if (!response.Success) {
+                    ModelState.AddModelError("", response.Message);
+                    return View(productoVM);
+                }
+
+                TempData["Mensaje"] = "Producto creado exitosamente.";
+
                 return RedirectToAction(nameof(Index));
             }
             catch

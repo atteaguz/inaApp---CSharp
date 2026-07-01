@@ -13,6 +13,8 @@ namespace InaApp.ProyectoINAApp.Mapping
 
             //ViewModel a DTO
             CreateMap<ProductoIndexViewModel, ProductoResponseDTO>();
+            CreateMap<ProductoCreateViewModel, ProductoCreateDTO>();
+            //CreateMap<ProductoUpdateViewModel, ProductoUpdateDTO>();
         }
     }
 }
