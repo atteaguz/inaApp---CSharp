@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
 
-namespace inaApp.DTOs.Categoria
+namespace InaApp.ProyectoINAApp.Models.Categoria
 {
-    public class CategoriaUpdateDTO
+    public class CategoriaCreateViewModel
     {
-        public int Id { get; set; }
-
-        [Required]
+        [Display(Name = "Nombre de la Categoría")]
+        [Required(ErrorMessage = "El nombre es obligatorio")]
         [StringLength(150, ErrorMessage = "El nombre no puede superar los 150 caracteres.")]
         public string Nombre { get; set; }
 

@@ -2,9 +2,10 @@
 using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
 using inaApp.DTOs.Producto;
+using inaApp.DTOs.Categoria;
 using InaApp.ProyectoINAApp.Models.Producto;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace InaApp.ProyectoINAApp.Controllers
 {
@@ -12,11 +13,16 @@ namespace InaApp.ProyectoINAApp.Controllers
     {
 
         private readonly IGenericService<ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO> _productoService;
+        private readonly IGenericService<CategoriaResponseDTO, CategoriaCreateDTO, CategoriaUpdateDTO> _categoriaService;
         private readonly IMapper _mapper;
 
-        public ProductoController(IGenericService<ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO> productoServ, IMapper mapper)
+        public ProductoController(
+            IGenericService<ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO> productoServ,
+            IGenericService<CategoriaResponseDTO, CategoriaCreateDTO, CategoriaUpdateDTO> categoriaServ,
+            IMapper mapper)
         {
             _productoService = productoServ;
+            _categoriaService = categoriaServ;
             _mapper = mapper;
         }
 
@@ -62,9 +68,11 @@ namespace InaApp.ProyectoINAApp.Controllers
 
         // GET: ProductoController/Create
         [HttpGet]
-        public ActionResult Create()
+        public async Task<ActionResult> CreateAsync()
         {
-            return View();
+            var viewModel = new ProductoCreateViewModel();
+            await CargarCategoriasDropDown(viewModel);
+            return View(viewModel);
         }
 
         // POST: ProductoController/Create
@@ -76,6 +84,7 @@ namespace InaApp.ProyectoINAApp.Controllers
             {
                 if (!ModelState.IsValid)
                 {
+                    await CargarCategoriasDropDown(productoVM);
                     return View(productoVM);
                 }
 
@@ -87,6 +96,7 @@ namespace InaApp.ProyectoINAApp.Controllers
 
                 if (!response.Success) {
                     ModelState.AddModelError("", response.Message);
+                    await CargarCategoriasDropDown(productoVM);
                     return View(productoVM);
                 }
 
@@ -96,7 +106,8 @@ namespace InaApp.ProyectoINAApp.Controllers
             }
             catch
             {
-                return View();
+                await CargarCategoriasDropDown(productoVM);
+                return View(productoVM);
             }
         }
 
@@ -112,6 +123,8 @@ namespace InaApp.ProyectoINAApp.Controllers
             }
 
             var productoVM = _mapper.Map<ProductoEditViewModel>(response.Data);
+            await CargarCategoriasDropDown(productoVM, productoVM.CategoriaId);
+
             return View(productoVM);
         }
 
@@ -124,6 +137,7 @@ namespace InaApp.ProyectoINAApp.Controllers
             {
                 if (!ModelState.IsValid)
                 {
+                    await CargarCategoriasDropDown(productoEditVM, productoEditVM.CategoriaId);
                     return View(productoEditVM);
                 }
 
@@ -134,6 +148,7 @@ namespace InaApp.ProyectoINAApp.Controllers
                 if (!response.Success)
                 {
                     ModelState.AddModelError("", response.Message);
+                    await CargarCategoriasDropDown(productoEditVM, productoEditVM.CategoriaId);
                     return View(productoEditVM);
                 }
 
@@ -142,7 +157,8 @@ namespace InaApp.ProyectoINAApp.Controllers
             }
             catch
             {
-                return View();
+                await CargarCategoriasDropDown(productoEditVM, productoEditVM.CategoriaId);
+                return View(productoEditVM);
             }
         }
 
@@ -183,6 +199,49 @@ namespace InaApp.ProyectoINAApp.Controllers
             catch
             {
                 return View();
+            }
+        }
+
+        //metodos agregados para cargar el dropdown de categorias en las vistas de crear y editar productos
+        private async Task CargarCategoriasDropDown(ProductoCreateViewModel viewModel, int? categoriaSeleccionada = null)
+        {
+            try
+            {
+                var categorias = await _categoriaService.ObtenerTodosAsync();
+
+                viewModel.CategoriasList = categorias.Data
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Nombre,
+                        Selected = categoriaSeleccionada.HasValue && c.Id == categoriaSeleccionada.Value
+                    })
+                    .ToList();
+            }
+            catch
+            {
+                viewModel.CategoriasList = new List<SelectListItem>();
+            }
+        }
+
+        private async Task CargarCategoriasDropDown(ProductoEditViewModel viewModel, int? categoriaSeleccionada = null)
+        {
+            try
+            {
+                var categorias = await _categoriaService.ObtenerTodosAsync();
+
+                ViewBag.Categorias = categorias.Data
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Nombre,
+                        Selected = categoriaSeleccionada.HasValue && c.Id == categoriaSeleccionada.Value
+                    })
+                    .ToList();
+            }
+            catch
+            {
+                ViewBag.Categorias = new List<SelectListItem>();
             }
         }
     }

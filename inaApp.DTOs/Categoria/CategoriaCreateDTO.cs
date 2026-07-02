@@ -4,12 +4,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
+
 namespace inaApp.DTOs.Categoria
 {
     public class CategoriaCreateDTO
     {
-        [Required]
-        public int Id { get; set; }
 
         [Required (ErrorMessage = "El nombre es obligatorio")]
         [StringLength(150, ErrorMessage = "El nombre no puede superar los 150 caracteres.")]

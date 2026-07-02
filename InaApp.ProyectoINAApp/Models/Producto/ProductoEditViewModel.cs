@@ -27,7 +27,6 @@ namespace InaApp.ProyectoINAApp.Models.Producto
         public int Stock { get; set; } = 1;
 
         [Display(Name = "Categoría")]
-        public int CategoriaId { get; set; } = 1;
-        //public string CategoriaNombre { get; set; }
+        public int CategoriaId { get; set; }
     }
 }

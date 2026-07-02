@@ -26,11 +26,14 @@ namespace inaApp.Repository
             {
                 var producto = await ObtenerPorIdsAsync(entity.Id);
                 if (producto == null) return null;
+
                 //actualizar los campos del producto
                 producto.Nombre = entity.Nombre;
                 producto.Precio = entity.Precio;
                 producto.Descripcion = entity.Descripcion;
                 producto.Stock = entity.Stock;
+                producto.CategoriaId = entity.CategoriaId;
+
                 _context.Producto.Update(producto);
                 await _context.SaveChangesAsync();
                 return producto;

@@ -29,6 +29,7 @@ namespace inaApp.Services.Mapping
                     opt => opt.MapFrom(src => src.Categoria.Nombre))
                 .ForMember(dest => dest.CategoriaId,
                     opt => opt.MapFrom(src => src.CategoriaId));
+
             CreateMap<Cliente, ClienteResponseDTO>();
             CreateMap<Categoria, CategoriaResponseDTO>();
         }
