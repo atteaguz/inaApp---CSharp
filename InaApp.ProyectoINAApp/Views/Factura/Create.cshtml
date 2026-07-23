@@ -15,6 +15,11 @@
         <div class="alert alert-danger">@Model.Error</div>
     }
 
+    @if (!Model.TieneDetalles)
+    {
+        <div class="alert alert-warning">Debe agregar al menos un producto</div>
+    }
+
     <div class="row">
         <div class="col-md-6">
             <div class="card">
@@ -22,7 +27,7 @@
                     <strong>Datos de la Factura</strong>
                 </div>
                 <div class="card-body">
-                    <form asp-action="Create" method="post">
+                    <form asp-action="Create" method="post" id="facturaForm">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                         <div class="mb-3">
@@ -49,7 +54,7 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label asp-for="Cantidad" class="form-label"></label>
-                                    <input asp-for="Cantidad" class="form-control" type="number" min="1" />
+                                    <input asp-for="Cantidad" class="form-control" type="number" min="1" value="1" />
                                     <span asp-validation-for="Cantidad" class="text-danger"></span>
                                 </div>
                             </div>
@@ -59,6 +64,15 @@
                                 </button>
                             </div>
                         </div>
+
+                        @for (int i = 0; i < Model.Detalles.Count; i++)
+                        {
+                            <input type="hidden" name="Detalles[@i].ProductoId" value="@Model.Detalles[i].ProductoId" />
+                            <input type="hidden" name="Detalles[@i].ProductoNombre" value="@Model.Detalles[i].ProductoNombre" />
+                            <input type="hidden" name="Detalles[@i].Cantidad" value="@Model.Detalles[i].Cantidad" />
+                            <input type="hidden" name="Detalles[@i].PrecioUnitario" value="@Model.Detalles[i].PrecioUnitario" />
+                            <input type="hidden" name="Detalles[@i].Subtotal" value="@Model.Detalles[i].Subtotal" />
+                        }
                     </form>
                 </div>
             </div>
@@ -84,16 +98,28 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var detalle in Model.Detalles)
+                                    @for (int i = 0; i < Model.Detalles.Count; i++)
                                     {
                                         <tr>
-                                            <td>@detalle.ProductoNombre</td>
-                                            <td class="text-center">@detalle.Cantidad</td>
-                                            <td class="text-end">₡@detalle.PrecioUnitario.ToString("N2")</td>
-                                            <td class="text-end">₡@detalle.Subtotal.ToString("N2")</td>
+                                            <td>@Model.Detalles[i].ProductoNombre</td>
+                                            <td class="text-center">@Model.Detalles[i].Cantidad</td>
+                                            <td class="text-end">₡@Model.Detalles[i].PrecioUnitario.ToString("N2")</td>
+                                            <td class="text-end">₡@Model.Detalles[i].Subtotal.ToString("N2")</td>
                                             <td class="text-center">
                                                 <form asp-action="RemoveProduct" method="post" style="display:inline;">
-                                                    <input type="hidden" name="productoId" value="@detalle.ProductoId" />
+                                                    <input type="hidden" name="productoId" value="@Model.Detalles[i].ProductoId" />
+                                                    @for (int j = 0; j < Model.Detalles.Count; j++)
+                                                    {
+                                                        if (j != i)
+                                                        {
+                                                            <input type="hidden" name="Detalles[@j].ProductoId" value="@Model.Detalles[j].ProductoId" />
+                                                            <input type="hidden" name="Detalles[@j].ProductoNombre" value="@Model.Detalles[j].ProductoNombre" />
+                                                            <input type="hidden" name="Detalles[@j].Cantidad" value="@Model.Detalles[j].Cantidad" />
+                                                            <input type="hidden" name="Detalles[@j].PrecioUnitario" value="@Model.Detalles[j].PrecioUnitario" />
+                                                            <input type="hidden" name="Detalles[@j].Subtotal" value="@Model.Detalles[j].Subtotal" />
+                                                        }
+                                                    }
+                                                    <input type="hidden" name="ClienteId" value="@Model.ClienteId" />
                                                     <button type="submit" class="btn btn-danger btn-sm">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
@@ -130,8 +156,6 @@
                                 {
                                     <input type="hidden" name="Detalles[@i].ProductoId" value="@Model.Detalles[i].ProductoId" />
                                     <input type="hidden" name="Detalles[@i].Cantidad" value="@Model.Detalles[i].Cantidad" />
-                                    <input type="hidden" name="Detalles[@i].PrecioUnitario" value="@Model.Detalles[i].PrecioUnitario" />
-                                    <input type="hidden" name="Detalles[@i].Subtotal" value="@Model.Detalles[i].Subtotal" />
                                 }
 
                                 <button type="submit" class="btn btn-success btn-lg">
