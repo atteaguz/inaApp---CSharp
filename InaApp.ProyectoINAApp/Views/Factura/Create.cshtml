@@ -1,0 +1,159 @@
+﻿@using InaApp.ProyectoINAApp.Models.Factura
+
+@model FacturaCreateViewModel
+
+@{
+    ViewData["Title"] = "Nueva Factura";
+}
+
+<div class="container mt-4">
+    <h2>Nueva Factura</h2>
+    <hr />
+
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <div class="alert alert-danger">@Model.Error</div>
+    }
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <strong>Datos de la Factura</strong>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="ClienteId" class="form-label"></label>
+                            <select asp-for="ClienteId" class="form-control" asp-items="Model.ClientesList">
+                                <option value="">-- Seleccione un cliente --</option>
+                            </select>
+                            <span asp-validation-for="ClienteId" class="text-danger"></span>
+                        </div>
+
+                        <hr />
+                        <h5>Agregar Productos</h5>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="ProductoId" class="form-label"></label>
+                                    <select asp-for="ProductoId" class="form-control" asp-items="Model.ProductosList">
+                                        <option value="">-- Seleccione un producto --</option>
+                                    </select>
+                                    <span asp-validation-for="ProductoId" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Cantidad" class="form-label"></label>
+                                    <input asp-for="Cantidad" class="form-control" type="number" min="1" />
+                                    <span asp-validation-for="Cantidad" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" formaction="@Url.Action("AddProduct")" class="btn btn-success w-100 mb-3">
+                                    <i class="bi bi-plus-circle"></i> Agregar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <strong>Detalle de la Factura</strong>
+                </div>
+                <div class="card-body">
+                    @if (Model.TieneDetalles)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th class="text-center">Cant</th>
+                                        <th class="text-end">Precio</th>
+                                        <th class="text-end">Subtotal</th>
+                                        <th class="text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var detalle in Model.Detalles)
+                                    {
+                                        <tr>
+                                            <td>@detalle.ProductoNombre</td>
+                                            <td class="text-center">@detalle.Cantidad</td>
+                                            <td class="text-end">₡@detalle.PrecioUnitario.ToString("N2")</td>
+                                            <td class="text-end">₡@detalle.Subtotal.ToString("N2")</td>
+                                            <td class="text-center">
+                                                <form asp-action="RemoveProduct" method="post" style="display:inline;">
+                                                    <input type="hidden" name="productoId" value="@detalle.ProductoId" />
+                                                    <button type="submit" class="btn btn-danger btn-sm">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <hr />
+                        <div class="row">
+                            <div class="col-6 text-end fw-bold">Subtotal:</div>
+                            <div class="col-6 text-end">₡@Model.Subtotal.ToString("N2")</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 text-end fw-bold">Descuento (5%):</div>
+                            <div class="col-6 text-end text-success">- ₡@Model.Descuento.ToString("N2")</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 text-end fw-bold fs-5">Total:</div>
+                            <div class="col-6 text-end fs-5 fw-bold text-primary">₡@Model.Total.ToString("N2")</div>
+                        </div>
+
+                        <hr />
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+
+                            <form asp-action="Create" method="post">
+                                <input type="hidden" name="ClienteId" value="@Model.ClienteId" />
+
+                                @for (int i = 0; i < Model.Detalles.Count; i++)
+                                {
+                                    <input type="hidden" name="Detalles[@i].ProductoId" value="@Model.Detalles[i].ProductoId" />
+                                    <input type="hidden" name="Detalles[@i].Cantidad" value="@Model.Detalles[i].Cantidad" />
+                                    <input type="hidden" name="Detalles[@i].PrecioUnitario" value="@Model.Detalles[i].PrecioUnitario" />
+                                    <input type="hidden" name="Detalles[@i].Subtotal" value="@Model.Detalles[i].Subtotal" />
+                                }
+
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="bi bi-check-circle"></i> Guardar Factura
+                                </button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-cart-plus" style="font-size: 3rem;"></i>
+                            <p class="mt-2">No hay productos agregados.</p>
+                            <p><small>Seleccione un producto y cantidad para agregar.</small></p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

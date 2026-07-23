@@ -1,11 +1,12 @@
 ﻿using AutoMapper;
-using inaApp.DTOs.Producto;
+using inaApp.DTOs.Categoria;
 using inaApp.DTOs.Cliente;
+using inaApp.DTOs.Factura;
+using inaApp.DTOs.Producto;
 using inaApp.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using inaApp.DTOs.Categoria;
 
 namespace inaApp.Services.Mapping
 {
@@ -32,6 +33,32 @@ namespace inaApp.Services.Mapping
 
             CreateMap<Cliente, ClienteResponseDTO>();
             CreateMap<Categoria, CategoriaResponseDTO>();
+
+            //Factura
+            CreateMap<Factura, FacturaResponseDTO>()
+                .ForMember(dest => dest.ClienteNombre,
+                    opt => opt.MapFrom(src => $"{src.Cliente.Nombre} {src.Cliente.PrimerApellido} {src.Cliente.SegundoApellido ?? ""}".Trim()))
+                .ForMember(dest => dest.ClienteCedula,
+                    opt => opt.MapFrom(src => src.Cliente.NumeroIdentificacion))
+                .ForMember(dest => dest.ClienteTelefono,
+                    opt => opt.MapFrom(src => src.Cliente.Telefono ?? "No registrado"))
+                .ForMember(dest => dest.ClienteCorreo,
+                    opt => opt.MapFrom(src => src.Cliente.CorreoElectronico ?? "No registrado"))
+                .ForMember(dest => dest.Detalles,
+                    opt => opt.MapFrom(src => src.FacturaDetalles));
+
+            CreateMap<Factura, FacturaListDTO>()
+                .ForMember(dest => dest.ClienteNombre,
+                    opt => opt.MapFrom(src => $"{src.Cliente.Nombre} {src.Cliente.PrimerApellido} {src.Cliente.SegundoApellido ?? ""}".Trim()));
+
+            CreateMap<FacturaCreateDTO, Factura>();
+
+            //FacturaDetalle
+            CreateMap<FacturaDetalle, FacturaDetalleResponseDTO>()
+                .ForMember(dest => dest.ProductoNombre,
+                    opt => opt.MapFrom(src => src.Producto.Nombre));
+
+            CreateMap<FacturaDetalleCreateDTO, FacturaDetalle>();
         }
     }
 }

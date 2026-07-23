@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using inaApp.DTOs.Categoria;
 using inaApp.DTOs.Cliente;
+using inaApp.DTOs.Factura;
 using inaApp.DTOs.Producto;
 using InaApp.ProyectoINAApp.Models.Categoria;
 using InaApp.ProyectoINAApp.Models.Cliente;
+using InaApp.ProyectoINAApp.Models.Factura;
 using InaApp.ProyectoINAApp.Models.Producto;
 using static inaApp.Common.Enums.Enumeradores;
 namespace InaApp.ProyectoINAApp.Mapping
@@ -46,6 +48,27 @@ namespace InaApp.ProyectoINAApp.Mapping
             CreateMap<ClienteEditViewModel, ClienteUpdateDTO>()
                 .ForMember(dest => dest.TipoIdentificacion,
                     opt => opt.MapFrom(src => (TipoIdentificacionEnum)src.TipoIdentificacion));
+
+            //factura
+            CreateMap<FacturaCreateViewModel, FacturaCreateDTO>()
+                .ForMember(dest => dest.Detalles,
+                    opt => opt.MapFrom(src => src.Detalles));
+
+            CreateMap<FacturaDetalleViewModel, FacturaDetalleCreateDTO>();
+
+            CreateMap<FacturaResponseDTO, FacturaDetailsViewModel>()
+                .ForMember(dest => dest.ClienteTelefono,
+                    opt => opt.MapFrom(src => src.ClienteTelefono ?? "No registrado"))
+                .ForMember(dest => dest.ClienteCorreo,
+                    opt => opt.MapFrom(src => src.ClienteCorreo ?? "No registrado"))
+                .ForMember(dest => dest.Detalles,
+                    opt => opt.MapFrom(src => src.Detalles));
+
+
+
+
+            CreateMap<FacturaListDTO, FacturaIndexViewModel>();
+            CreateMap<FacturaDetalleResponseDTO, FacturaDetalleViewModel>();
         }
     }
 }

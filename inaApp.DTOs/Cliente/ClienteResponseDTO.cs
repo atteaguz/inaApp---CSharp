@@ -14,5 +14,6 @@ namespace inaApp.DTOs.Cliente
         public string? SegundoApellido { get; set; }
         public string? CorreoElectronico { get; set; }
         public string? Telefono { get; set; }
+        public DateTime FechaCreacion { get; set; }
     }
 }

@@ -1,0 +1,141 @@
+﻿@using InaApp.ProyectoINAApp.Models.Factura
+
+@model FacturaDetailsViewModel
+
+@{
+    ViewData["Title"] = $"Factura #{Model.Id}";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Factura #@Model.Id</h2>
+        <div>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            @if (Model.Estado)
+            {
+                <a asp-action="Anular" asp-route-id="@Model.Id" class="btn btn-danger">
+                    <i class="bi bi-x-circle"></i> Anular
+                </a>
+            }
+        </div>
+    </div>
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success">@TempData["Mensaje"]</div>
+    }
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <strong>Información General</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-4 fw-bold"># Factura:</div>
+                        <div class="col-8">@Model.Id</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 fw-bold">Fecha:</div>
+                        <div class="col-8">@Model.Fecha.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 fw-bold">Estado:</div>
+                        <div class="col-8">
+                            <span class="badge bg-@Model.EstadoBadge">@Model.EstadoTexto</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 fw-bold">Fecha Creación:</div>
+                        <div class="col-8">@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <strong>Información del Cliente</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-4 fw-bold">Nombre:</div>
+                        <div class="col-8">@Model.ClienteNombre</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 fw-bold">Cédula:</div>
+                        <div class="col-8">@Model.ClienteCedula</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 fw-bold">Teléfono:</div>
+                        <div class="col-8">@(Model.ClienteTelefono ?? "No registrado")</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 fw-bold">Correo:</div>
+                        <div class="col-8">@(Model.ClienteCorreo ?? "No registrado")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header bg-light">
+            <strong>Detalle de la Factura</strong>
+        </div>
+        <div class="card-body">
+            @if (Model.Detalles != null && Model.Detalles.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-end">Precio Unitario</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var detalle in Model.Detalles)
+                            {
+                                <tr>
+                                    <td>@detalle.ProductoNombre</td>
+                                    <td class="text-center">@detalle.Cantidad</td>
+                                    <td class="text-end">₡@detalle.PrecioUnitario.ToString("N2")</td>
+                                    <td class="text-end">₡@detalle.Subtotal.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold">Subtotal:</td>
+                                <td class="text-end">₡@Model.Subtotal.ToString("N2")</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold text-success">Descuento (5%):</td>
+                                <td class="text-end text-success">- ₡@Model.Descuento.ToString("N2")</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold fs-5">Total:</td>
+                                <td class="text-end fs-5 fw-bold text-primary">₡@Model.Total.ToString("N2")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-center text-muted">No hay productos en esta factura.</p>
+            }
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="Index" class="btn btn-secondary">Volver a la lista</a>
+    </div>
+</div>

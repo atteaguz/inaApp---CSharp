@@ -1,0 +1,86 @@
+﻿@using InaApp.ProyectoINAApp.Models.Factura
+
+@model List<FacturaIndexViewModel>
+
+@{
+    ViewData["Title"] = "Facturas";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Listado de Facturas</h2>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nueva Factura
+        </a>
+    </div>
+
+    @if (ViewBag.Message != null)
+    {
+        <div class="alert alert-info">@ViewBag.Message</div>
+    }
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success">@TempData["Mensaje"]</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th># Factura</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Productos</th>
+                    <th class="text-end">Subtotal</th>
+                    <th class="text-end">Descuento (5%)</th>
+                    <th class="text-end">Total</th>
+                    <th>Estado</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var factura in Model)
+                    {
+                        <tr>
+                            <td>@factura.Id</td>
+                            <td>@factura.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@factura.ClienteNombre</td>
+                            <td class="text-center">@factura.CantidadProductos</td>
+                            <td class="text-end">₡@factura.Subtotal.ToString("N2")</td>
+                            <td class="text-end">₡@factura.Descuento.ToString("N2")</td>
+                            <td class="text-end fw-bold">₡@factura.Total.ToString("N2")</td>
+                            <td>
+                                <span class="badge bg-@factura.EstadoBadge">@factura.EstadoTexto</span>
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="Details" asp-route-id="@factura.Id" class="btn btn-info btn-sm">
+                                    <i class="bi bi-eye"></i> Detalles
+                                </a>
+                                @if (factura.Estado)
+                                {
+                                    <a asp-action="Anular" asp-route-id="@factura.Id" class="btn btn-danger btn-sm">
+                                        <i class="bi bi-x-circle"></i> Anular
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9" class="text-center">No existen facturas registradas.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

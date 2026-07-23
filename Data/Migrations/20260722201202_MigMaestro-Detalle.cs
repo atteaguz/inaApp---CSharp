@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace inaApp.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class EstadoEnCategoria : Migration
+    public partial class MigMaestroDetalle : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -67,7 +67,61 @@ namespace inaApp.Data.Migrations
                         column: x => x.CategoriaId,
                         principalTable: "tbCategoria",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tbFactura",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ClienteId = table.Column<int>(type: "int", nullable: false),
+                    Subtotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Descuento = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Estado = table.Column<bool>(type: "bit", nullable: false),
+                    FechaCreacion = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tbFactura", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_tbFactura_tbCliente_ClienteId",
+                        column: x => x.ClienteId,
+                        principalTable: "tbCliente",
+                        principalColumn: "IdCliente",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tbFacturaDetalle",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FacturaId = table.Column<int>(type: "int", nullable: false),
+                    ProductoId = table.Column<int>(type: "int", nullable: false),
+                    Cantidad = table.Column<int>(type: "int", nullable: false),
+                    PrecioUnitario = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Subtotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tbFacturaDetalle", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_tbFacturaDetalle_tbFactura_FacturaId",
+                        column: x => x.FacturaId,
+                        principalTable: "tbFactura",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_tbFacturaDetalle_tbProducto_ProductoId",
+                        column: x => x.ProductoId,
+                        principalTable: "tbProducto",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -75,6 +129,21 @@ namespace inaApp.Data.Migrations
                 table: "tbCliente",
                 columns: new[] { "TipoIdentificacion", "NumeroIdentificacion" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tbFactura_ClienteId",
+                table: "tbFactura",
+                column: "ClienteId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tbFacturaDetalle_FacturaId",
+                table: "tbFacturaDetalle",
+                column: "FacturaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tbFacturaDetalle_ProductoId",
+                table: "tbFacturaDetalle",
+                column: "ProductoId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_tbProducto_CategoriaId",
@@ -86,10 +155,16 @@ namespace inaApp.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "tbCliente");
+                name: "tbFacturaDetalle");
+
+            migrationBuilder.DropTable(
+                name: "tbFactura");
 
             migrationBuilder.DropTable(
                 name: "tbProducto");
+
+            migrationBuilder.DropTable(
+                name: "tbCliente");
 
             migrationBuilder.DropTable(
                 name: "tbCategoria");

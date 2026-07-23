@@ -34,6 +34,16 @@ namespace InaApp.ProyectoINAApp.Extentions
             services.AddScoped<IGenericRepository<Producto>, ProductoRepository>();
             services.AddScoped<IGenericRepository<Cliente>, ClienteRepository>();
             services.AddScoped<IGenericRepository<Categoria>, CategoriaRepository>();
+            
+
+            //inyecciones para facturacion
+            services.AddScoped<FacturaService>();
+            services.AddScoped<FacturaRepository>();
+            services.AddScoped<FacturaDetalleRepository>();
+            services.AddScoped<ClienteService>();
+            services.AddScoped<ClienteRepository>();
+            services.AddScoped<ProductoService>();
+            services.AddScoped<ProductoRepository>();
 
             return services;
         }

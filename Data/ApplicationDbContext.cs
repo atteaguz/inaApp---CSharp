@@ -15,6 +15,8 @@ namespace inaApp.Data
         public DbSet<Producto> Producto { get; set; }
         public DbSet<Cliente> Cliente { get; set; }
         public DbSet<Categoria> Categoria { get; set; }
+        public DbSet<Factura> Factura { get; set; }
+        public DbSet<FacturaDetalle> FacturaDetalle { get; set; }
 
         //fluent api
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -24,6 +26,27 @@ namespace inaApp.Data
                 .HasOne(p => p.Categoria)
                 .WithMany(c => c.Productos)
                 .HasForeignKey(p => p.CategoriaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //relación Factura - Cliente
+            modelBuilder.Entity<Factura>()
+                .HasOne(f => f.Cliente)
+                .WithMany()
+                .HasForeignKey(f => f.ClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //relación Factura - FacturaDetalle
+            modelBuilder.Entity<FacturaDetalle>()
+                .HasOne(d => d.Factura)
+                .WithMany(f => f.FacturaDetalles)
+                .HasForeignKey(d => d.FacturaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            //relación FacturaDetalle - Producto
+            modelBuilder.Entity<FacturaDetalle>()
+                .HasOne(d => d.Producto)
+                .WithMany()
+                .HasForeignKey(d => d.ProductoId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             base.OnModelCreating(modelBuilder);
