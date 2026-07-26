@@ -108,16 +108,20 @@ namespace inaApp.Services
                 var productos = new List<Producto>();
                 foreach (var detalleDto in dto.Detalles)
                 {
+                    //validar que el producto exista
                     var producto = await _productoRepo.ObtenerPorIdsAsync(detalleDto.ProductoId);
                     if (producto == null)
                         throw new NotFoundException($"Producto con ID {detalleDto.ProductoId} no encontrado");
 
+                    //validar que el producto esté activo
                     if (!producto.Estado)
                         throw new InvalidOperationException($"El producto '{producto.Nombre}' está inactivo");
 
+                    //validar que la cantidad sea mayor a 0
                     if (detalleDto.Cantidad <= 0)
                         throw new InvalidOperationException("La cantidad debe ser mayor a 0");
 
+                    //validar el stock disponible del producto
                     if (detalleDto.Cantidad > producto.Stock)
                         throw new InsufficientStockException(
                             $"Stock insuficiente para '{producto.Nombre}'. Disponible: {producto.Stock}, Solicitado: {detalleDto.Cantidad}");
@@ -153,27 +157,27 @@ namespace inaApp.Services
                         ProductoId = detalleDto.ProductoId,
                         Cantidad = detalleDto.Cantidad,
                         PrecioUnitario = detalleDto.PrecioUnitario,
-                        Subtotal = detalleDto.Subtotal,
+                        Subtotal = detalleDto.Subtotal, //subtotal individual del detalle
                         Factura = factura
                     };
 
-                    subtotal += detalle.Subtotal;
+                    subtotal += detalle.Subtotal; //suma de los subtotales de la factura
                     detalles.Add(detalle);
 
                     //stock de producto se actualiza
-                    producto.Stock -= detalleDto.Cantidad;
-                    _context.Producto.Update(producto);
+                    producto.Stock -= detalleDto.Cantidad; //resta la cantidad vendida al stock de los productos
+                    _context.Producto.Update(producto); //guardar el cambio en el stock
                 }
 
                 //calcular el descuento y total
-                var descuento = Math.Round(subtotal * PORCENTAJE_DESCUENTO, 2);
-                var total = Math.Round(subtotal - descuento, 2);
+                var descuento = Math.Round(subtotal * PORCENTAJE_DESCUENTO, 2); //5% del subtotal
+                var total = Math.Round(subtotal - descuento, 2); //total final de la factura
 
-                //valores de la factura
-                factura.Subtotal = subtotal;
-                factura.Descuento = descuento;
-                factura.Total = total;
-                factura.FacturaDetalles = detalles;
+                //valores a asignar a la factura
+                factura.Subtotal = subtotal; //subtotal de todos los detalles
+                factura.Descuento = descuento; //descuento aplicado
+                factura.Total = total; //total final de la factura
+                factura.FacturaDetalles = detalles; //asignar los detalles a la factura
 
                 await _context.Factura.AddAsync(factura);
                 await _context.SaveChangesAsync();
