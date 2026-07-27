@@ -1,5 +1,6 @@
 ﻿namespace InaApp.ProyectoINAApp.Models.Factura
 {
+    // Detalle de la factura para mostrar en la vista/boton de detalles
     public class FacturaDetailsViewModel
     {
         public int Id { get; set; }

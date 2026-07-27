@@ -2,6 +2,7 @@
 
 namespace InaApp.ProyectoINAApp.Models.Factura
 {
+    //Detalle factura al momento de agregar productos a la factura
     public class FacturaDetalleViewModel
     {
         public int ProductoId { get; set; }

@@ -93,8 +93,7 @@ namespace InaApp.ProyectoINAApp.Controllers
         public async Task<ActionResult> Create()
         {
             var viewModel = new FacturaCreateViewModel();
-            await CargarClientes(viewModel);
-            await CargarProductos(viewModel);
+            await CargarDatos(viewModel);
             return View(viewModel);
         }
 
@@ -104,37 +103,53 @@ namespace InaApp.ProyectoINAApp.Controllers
         {
             try
             {
-                //validar producto seleccionado
+                //validaciones para ux
+                //no reemplazan las validaciones del service
+
+                //validar que se haya seleccionado un producto
+                if (viewModel.ProductoId <= 0)
+                {
+                    viewModel.Error = "Debe seleccionar un producto";
+                    await CargarDatos(viewModel);
+                    return View("Create", viewModel);
+                }
+
+                //validar que la cantidad sea mayor a 0
+                if (viewModel.Cantidad <= 0)
+                {
+                    viewModel.Error = "La cantidad debe ser mayor a 0";
+                    await CargarDatos(viewModel);
+                    return View("Create", viewModel);
+                }
+
+                //obtener el producto solo para mostrarlo en la vista
                 var productoResponse = await _productoService.ObtenerPorIdsAsync(viewModel.ProductoId);
                 if (!productoResponse.Success)
                 {
                     viewModel.Error = "Producto no encontrado";
-                    await CargarClientes(viewModel);
-                    await CargarProductos(viewModel);
+                    await CargarDatos(viewModel);
                     return View("Create", viewModel);
                 }
 
                 var producto = productoResponse.Data;
 
-                //validar cantidad
+                //validar el stock disponible
                 if (viewModel.Cantidad > producto.Stock)
                 {
                     viewModel.Error = $"Stock insuficiente. Disponible: {producto.Stock}";
-                    await CargarClientes(viewModel);
-                    await CargarProductos(viewModel);
+                    await CargarDatos(viewModel);
                     return View("Create", viewModel);
                 }
 
-                //validar que el producto no se agregue dos veces
+                //validar que no se agregue dos veces el mismo producto
                 if (viewModel.Detalles.Any(d => d.ProductoId == viewModel.ProductoId))
                 {
                     viewModel.Error = $"El producto '{producto.Nombre}' ya fue agregado";
-                    await CargarClientes(viewModel);
-                    await CargarProductos(viewModel);
+                    await CargarDatos(viewModel);
                     return View("Create", viewModel);
                 }
 
-                //agregar producto al detalle
+                //agregar el producto al detalle de la factura
                 var detalle = new FacturaDetalleViewModel
                 {
                     ProductoId = viewModel.ProductoId,
@@ -148,20 +163,19 @@ namespace InaApp.ProyectoINAApp.Controllers
                 viewModel.Detalles.Add(detalle);
                 RecalcularTotales(viewModel);
 
-                //limpiar campos de producto y cantidad para agregar otro producto
+                // Limpiar campos para agregar otro producto
                 viewModel.ProductoId = 0;
                 viewModel.Cantidad = 1;
                 viewModel.Error = null;
 
-                await CargarClientes(viewModel);
-                await CargarProductos(viewModel);
+                //cargar los datos a la vista
+                await CargarDatos(viewModel);
                 return View("Create", viewModel);
             }
             catch (Exception ex)
             {
                 viewModel.Error = $"Error al agregar producto: {ex.Message}";
-                await CargarClientes(viewModel);
-                await CargarProductos(viewModel);
+                await CargarDatos(viewModel);
                 return View("Create", viewModel);
             }
         }
@@ -181,8 +195,7 @@ namespace InaApp.ProyectoINAApp.Controllers
             viewModel.Cantidad = 1;
             viewModel.Error = null;
 
-            await CargarClientes(viewModel);
-            await CargarProductos(viewModel);
+            await CargarDatos(viewModel);
             return View("Create", viewModel);
         }
 
@@ -197,8 +210,7 @@ namespace InaApp.ProyectoINAApp.Controllers
                 if (viewModel.ClienteId <= 0)
                 {
                     ModelState.AddModelError("ClienteId", "Debe seleccionar un cliente");
-                    await CargarClientes(viewModel);
-                    await CargarProductos(viewModel);
+                    await CargarDatos(viewModel);
                     return View(viewModel);
                 }
 
@@ -206,8 +218,7 @@ namespace InaApp.ProyectoINAApp.Controllers
                 if (!viewModel.Detalles.Any())
                 {
                     viewModel.Error = "Debe agregar al menos un producto";
-                    await CargarClientes(viewModel);
-                    await CargarProductos(viewModel);
+                    await CargarDatos(viewModel);
                     return View(viewModel);
                 }
 
@@ -233,8 +244,7 @@ namespace InaApp.ProyectoINAApp.Controllers
                 if (!response.Success)
                 {
                     viewModel.Error = response.Message;
-                    await CargarClientes(viewModel);
-                    await CargarProductos(viewModel);
+                    await CargarDatos(viewModel);
                     return View(viewModel);
                 }
 
@@ -244,29 +254,25 @@ namespace InaApp.ProyectoINAApp.Controllers
             catch (NotFoundException ex)
             {
                 viewModel.Error = ex.Message;
-                await CargarClientes(viewModel);
-                await CargarProductos(viewModel);
+                await CargarDatos(viewModel);
                 return View(viewModel);
             }
             catch (InsufficientStockException ex)
             {
                 viewModel.Error = ex.Message;
-                await CargarClientes(viewModel);
-                await CargarProductos(viewModel);
+                await CargarDatos(viewModel);
                 return View(viewModel);
             }
             catch (ClienteInactivoException ex)
             {
                 viewModel.Error = ex.Message;
-                await CargarClientes(viewModel);
-                await CargarProductos(viewModel);
+                await CargarDatos(viewModel);
                 return View(viewModel);
             }
             catch (Exception ex)
             {
                 viewModel.Error = $"Error al crear la factura: {ex.Message}";
-                await CargarClientes(viewModel);
-                await CargarProductos(viewModel);
+                await CargarDatos(viewModel);
                 return View(viewModel);
             }
         }
@@ -332,6 +338,12 @@ namespace InaApp.ProyectoINAApp.Controllers
         }
 
         //metodos auxiliares para cargar clientes y productos
+        private async Task CargarDatos(FacturaCreateViewModel viewModel)
+        {
+            await CargarClientes(viewModel);
+            await CargarProductos(viewModel);
+        }
+
         private async Task CargarClientes(FacturaCreateViewModel viewModel)
         {
             try
