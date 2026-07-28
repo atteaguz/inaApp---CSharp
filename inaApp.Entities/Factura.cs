@@ -25,6 +25,8 @@ namespace inaApp.Entities
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         public decimal Descuento { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal ImpuestoTotal { get; set; }
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         public decimal Total { get; set; }

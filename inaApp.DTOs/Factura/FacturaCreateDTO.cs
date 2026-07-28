@@ -1,4 +1,5 @@
-﻿using System;
+﻿using inaApp.Common.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -14,8 +15,13 @@ namespace inaApp.DTOs.Factura
         public List<FacturaDetalleCreateDTO> Detalles { get; set; } = new List<FacturaDetalleCreateDTO>();
 
         public DateTime Fecha { get; set; } = DateTime.Now;
-        public decimal Descuento { get; set; } = 0;
+        //nuevo campo
+        public TipoDocumentoEnum TipoDocumento { get; set; } = TipoDocumentoEnum.FacturaElectronica;
+
+        //campos calculados, se usan en el service
         public decimal Subtotal { get; set; }
+        public decimal Descuento { get; set; }
+        public decimal ImpuestoTotal { get; set; }
         public decimal Total { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using inaApp.Common.Enums;
 using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
 using inaApp.Common.Response;
@@ -66,6 +67,23 @@ namespace inaApp.Services
                     throw new NotFoundException($"La categoría con ID {entity.CategoriaId} no existe.");
             }
 
+            // Validación de impuesto
+            if (entity.TipoImpuesto == TipoImpuestoEnum.IVA && entity.PorcentajeImpuesto <= 0)
+            {
+                throw new ImpuestoInvalidoException("El porcentaje de IVA debe ser mayor a 0");
+            }
+
+            if (entity.TipoImpuesto == TipoImpuestoEnum.Exento && entity.PorcentajeImpuesto != 0)
+            {
+                throw new ImpuestoInvalidoException("Los productos exentos deben tener 0% de impuesto");
+            }
+
+            // Validación de descuento máximo
+            if (entity.DescuentoMaximo < 0 || entity.DescuentoMaximo > 100)
+            {
+                throw new InvalidOperationException("El descuento máximo debe estar entre 0 y 100");
+            }
+
             //mapeo de DTO a entity
             var producto = _mapper.Map<Producto>(entity);
             producto = await _productoRepo.ActualizarAsync(producto);
@@ -120,7 +138,24 @@ namespace inaApp.Services
             if (!categoriaActiva.Estado)
             {
                 throw new InvalidOperationException($"La categoría '{categoriaActiva.Nombre}' está inactiva y no se pueden asociar productos.");
-            }            
+            }
+
+            // Validación de impuesto
+            if (entity.TipoImpuesto == TipoImpuestoEnum.IVA && entity.PorcentajeImpuesto <= 0)
+            {
+                throw new ImpuestoInvalidoException("El porcentaje de IVA debe ser mayor a 0");
+            }
+
+            if (entity.TipoImpuesto == TipoImpuestoEnum.Exento && entity.PorcentajeImpuesto != 0)
+            {
+                throw new ImpuestoInvalidoException("Los productos exentos deben tener 0% de impuesto");
+            }
+
+            // Validación de descuento máximo
+            if (entity.DescuentoMaximo < 0 || entity.DescuentoMaximo > 100)
+            {
+                throw new InvalidOperationException("El descuento máximo debe estar entre 0 y 100");
+            }
 
             //convertir de DTO a Entidad
             Producto producto = _mapper.Map<Producto>(entity);

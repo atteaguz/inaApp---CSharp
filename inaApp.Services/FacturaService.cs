@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using inaApp.Common.Enums;
 using inaApp.Common.Exceptions;
 using inaApp.Common.Response;
 using inaApp.Data;
@@ -88,7 +89,7 @@ namespace inaApp.Services
 
             try
             {
-                //validar al cliente
+                //validar cliente
                 var cliente = await _clienteRepo.ObtenerPorIdsAsync(dto.ClienteId);
                 if (cliente == null)
                     throw new NotFoundException($"Cliente con ID {dto.ClienteId} no encontrado");
@@ -100,99 +101,134 @@ namespace inaApp.Services
                 if (dto.Detalles == null || !dto.Detalles.Any())
                     throw new FacturaSinDetalleException("La factura debe contener al menos un producto");
 
-                //validar que no se repitan productos en los detalles
+                //validar productos duplicados
                 var productosIds = dto.Detalles.Select(d => d.ProductoId).ToList();
                 if (productosIds.Count != productosIds.Distinct().Count())
                     throw new DuplicadoProductoException("No se puede agregar el mismo producto dos veces");
 
+                //procesar cada producto
                 var productos = new List<Producto>();
+                decimal subtotal = 0;
+                decimal descuentoTotal = 0;
+                decimal impuestoTotal = 0;
+                var detalles = new List<FacturaDetalle>();
+
                 foreach (var detalleDto in dto.Detalles)
                 {
-                    //validar que el producto exista
                     var producto = await _productoRepo.ObtenerPorIdsAsync(detalleDto.ProductoId);
                     if (producto == null)
                         throw new NotFoundException($"Producto con ID {detalleDto.ProductoId} no encontrado");
 
-                    //validar que el producto esté activo
                     if (!producto.Estado)
                         throw new InvalidOperationException($"El producto '{producto.Nombre}' está inactivo");
 
-                    //validar que la cantidad sea mayor a 0
                     if (detalleDto.Cantidad <= 0)
                         throw new InvalidOperationException("La cantidad debe ser mayor a 0");
 
-                    //validar el stock disponible del producto
                     if (detalleDto.Cantidad > producto.Stock)
                         throw new InsufficientStockException(
                             $"Stock insuficiente para '{producto.Nombre}'. Disponible: {producto.Stock}, Solicitado: {detalleDto.Cantidad}");
 
-                    //precio unitario y subtotal
+                    //calculos con impuesto y descuento
+
+                    //precio unitario
                     detalleDto.PrecioUnitario = producto.Precio;
+
+                    //subtotal de línea sin descuento
                     detalleDto.Subtotal = detalleDto.Cantidad * detalleDto.PrecioUnitario;
-                    detalleDto.ProductoNombre = producto.Nombre;
 
-                    productos.Add(producto);
-                }
+                    //validar descuento maximo permitido por producto
+                    //si se aplica descuento global, verificar que no exceda el maximo permitido
+                    decimal descuentoAplicado = 0;
+                    if (dto.Descuento > 0)
+                    {
+                        //calcular descuento sobre el subtotal de la linea
+                        decimal descuentoLinea = detalleDto.Subtotal * (dto.Descuento / 100);
+                        decimal descuentoMaximoPermitido = detalleDto.Subtotal * (producto.DescuentoMaximo / 100);
 
-                //creacion de la factura
-                var factura = new Factura
-                {
-                    ClienteId = dto.ClienteId,
-                    Fecha = dto.Fecha,
-                    Estado = true,
-                    FechaCreacion = DateTime.Now
-                };
+                        if (descuentoLinea > descuentoMaximoPermitido)
+                        {
+                            //aplicar descuento máximo permitido
+                            descuentoAplicado = descuentoMaximoPermitido;
+                        }
+                        else
+                        {
+                            descuentoAplicado = descuentoLinea;
+                        }
+                    }
 
-                //creacion de los detalles y calculo del subtotal
-                decimal subtotal = 0;
-                var detalles = new List<FacturaDetalle>();
+                    //guardar el descuento aplicado en el detalle
+                    detalleDto.DescuentoAplicado = descuentoAplicado;
 
-                for (int i = 0; i < dto.Detalles.Count; i++)
-                {
-                    var detalleDto = dto.Detalles[i];
-                    var producto = productos[i];
+                    //subtotal despues de descuento para calcular impuesto
+                    decimal subtotalConDescuento = detalleDto.Subtotal - descuentoAplicado;
 
+                    //calcular impuesto
+                    detalleDto.PorcentajeImpuesto = producto.PorcentajeImpuesto;
+                    detalleDto.MontoImpuesto = subtotalConDescuento * (producto.PorcentajeImpuesto / 100);
+
+                    //total de linea
+                    detalleDto.TotalLinea = subtotalConDescuento + detalleDto.MontoImpuesto;
+
+                    //sumar totales de la factura
+                    subtotal += detalleDto.Subtotal;
+                    descuentoTotal += descuentoAplicado;
+                    impuestoTotal += detalleDto.MontoImpuesto;
+
+                    //crear el detalle de factura
                     var detalle = new FacturaDetalle
                     {
                         ProductoId = detalleDto.ProductoId,
                         Cantidad = detalleDto.Cantidad,
                         PrecioUnitario = detalleDto.PrecioUnitario,
-                        Subtotal = detalleDto.Subtotal, //subtotal individual del detalle
-                        Factura = factura
+                        Subtotal = detalleDto.Subtotal,
+                        PorcentajeImpuesto = detalleDto.PorcentajeImpuesto,
+                        MontoImpuesto = detalleDto.MontoImpuesto,
+                        DescuentoAplicado = detalleDto.DescuentoAplicado,
+                        TotalLinea = detalleDto.TotalLinea
                     };
 
-                    subtotal += detalle.Subtotal; //suma de los subtotales de la factura
                     detalles.Add(detalle);
 
-                    //stock de producto se actualiza
-                    producto.Stock -= detalleDto.Cantidad; //resta la cantidad vendida al stock de los productos
-                    _context.Producto.Update(producto); //guardar el cambio en el stock
+                    //actualizar los stock
+                    producto.Stock -= detalleDto.Cantidad;
+                    _context.Producto.Update(producto);
+
+                    productos.Add(producto);
                 }
 
-                //calcular el descuento y total
-                var descuento = Math.Round(subtotal * PORCENTAJE_DESCUENTO, 2); //5% del subtotal
-                var total = Math.Round(subtotal - descuento, 2); //total final de la factura
+                //calcular totales finales de la factura
+                //total final = subtotal - descuento + impuestos
+                decimal totalFinal = subtotal - descuentoTotal + impuestoTotal;
 
-                //valores a asignar a la factura
-                factura.Subtotal = subtotal; //subtotal de todos los detalles
-                factura.Descuento = descuento; //descuento aplicado
-                factura.Total = total; //total final de la factura
-                factura.FacturaDetalles = detalles; //asignar los detalles a la factura
+                //crear la factura
+                var factura = new Factura
+                {
+                    ClienteId = dto.ClienteId,
+                    Fecha = dto.Fecha,
+                    TipoDocumento = dto.TipoDocumento,
+                    Subtotal = subtotal,
+                    Descuento = descuentoTotal,
+                    ImpuestoTotal = impuestoTotal,
+                    Total = totalFinal,
+                    Estado = true,
+                    FechaCreacion = DateTime.Now,
+                    FacturaDetalles = detalles
+                };
 
                 await _context.Factura.AddAsync(factura);
                 await _context.SaveChangesAsync();
 
-                //se confirma la transacción
                 await transaction.CommitAsync();
 
-                //cargar la factura creada con sus detalles y cliente para el response
+                //cargar la factura creada para el response
                 var facturaCreada = await _facturaRepo.ObtenerPorIdsAsync(factura.Id);
                 var responseDTO = _mapper.Map<FacturaResponseDTO>(facturaCreada);
 
                 return new Response<FacturaResponseDTO>
                 {
                     Data = responseDTO,
-                    Message = $"Factura #{factura.Id} creada exitosamente. Total: ₡{total:N2}",
+                    Message = $"Factura #{factura.Id} creada exitosamente. Total: ₡{totalFinal:N2}",
                     Success = true
                 };
             }
@@ -211,7 +247,16 @@ namespace inaApp.Services
                 throw new NotFoundException($"Factura con ID {id} no encontrada");
 
             if (!factura.Estado)
-                throw new InvalidOperationException($"La factura #{id} ya esta anulada");
+                throw new InvalidOperationException($"La factura #{id} ya está anulada");
+
+            // Verificar si tiene Notas de Crédito asociadas
+            if (factura.NotasCredito != null && factura.NotasCredito.Any())
+            {
+                // Si tiene notas de crédito, no se puede anular directamente
+                // Se debe usar el proceso de Nota de Crédito
+                throw new InvalidOperationException(
+                    $"La factura #{id} tiene notas de crédito asociadas. Use el proceso de Nota de Crédito para anular completamente.");
+            }
 
             var result = await _facturaRepo.EliminarAsync(id);
 

@@ -17,6 +17,8 @@ namespace inaApp.Data
         public DbSet<Categoria> Categoria { get; set; }
         public DbSet<Factura> Factura { get; set; }
         public DbSet<FacturaDetalle> FacturaDetalle { get; set; }
+        public DbSet<NotaCredito> NotaCredito { get; set; }
+        public DbSet<NotaCreditoDetalle> NotaCreditoDetalle { get; set; }
 
         //fluent api
         protected override void OnModelCreating(ModelBuilder modelBuilder)
