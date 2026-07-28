@@ -1,4 +1,5 @@
-﻿using System;
+﻿using inaApp.Common.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -26,6 +27,20 @@ namespace inaApp.Entities
         [Range(1, int.MaxValue, ErrorMessage = "El stock no puede ser negativo")]
         public int Stock { get; set; }
         public bool Estado { get; set; } = true;
+
+        //campos nuevos agrgados
+        [Required(ErrorMessage = "El tipo de impuesto es obligatorio")]
+        public TipoImpuestoEnum TipoImpuesto { get; set; }
+
+        [Required(ErrorMessage = "El porcentaje de impuesto es obligatorio")]
+        [Range(0, 100, ErrorMessage = "El porcentaje de impuesto debe estar entre 0 y 100")]
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal PorcentajeImpuesto { get; set; }
+
+        [Required(ErrorMessage = "El descuento máximo es obligatorio")]
+        [Range(0, 100, ErrorMessage = "El descuento máximo debe estar entre 0 y 100")]
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal DescuentoMaximo { get; set; }
 
         //relacion entre Producto y Categoria - * a 1
         public int CategoriaId { get; set; }
