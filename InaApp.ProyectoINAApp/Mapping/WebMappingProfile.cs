@@ -33,13 +33,13 @@ namespace InaApp.ProyectoINAApp.Mapping
             CreateMap<CategoriaEditViewModel, CategoriaUpdateDTO>();
 
             //cliente
-            // DTO → ViewModel
+            //DTO → ViewModel
             CreateMap<ClienteResponseDTO, ClienteIndexViewModel>();
             CreateMap<ClienteResponseDTO, ClienteEditViewModel>()
                 .ForMember(dest => dest.TipoIdentificacion,
                     opt => opt.MapFrom(src => (int)Enum.Parse(typeof(TipoIdentificacionEnum), src.TipoIdentificacion)));
 
-            // ViewModel → DTO
+            //viewModel → DTO
             CreateMap<ClienteIndexViewModel, ClienteResponseDTO>();
             CreateMap<ClienteCreateViewModel, ClienteCreateDTO>()
                 .ForMember(dest => dest.TipoIdentificacion,
@@ -64,11 +64,32 @@ namespace InaApp.ProyectoINAApp.Mapping
                 .ForMember(dest => dest.Detalles,
                     opt => opt.MapFrom(src => src.Detalles));
 
-
-
-
             CreateMap<FacturaListDTO, FacturaIndexViewModel>();
             CreateMap<FacturaDetalleResponseDTO, FacturaDetalleViewModel>();
+
+            //nota de credito
+            CreateMap<NotaCreditoResponseDTO, NotaCreditoIndexViewModel>()
+                .ForMember(dest => dest.FacturaOriginalNumero,
+                    opt => opt.MapFrom(src => src.FacturaOriginalId.ToString()))
+                .ForMember(dest => dest.CantidadProductos,
+                    opt => opt.MapFrom(src => src.Detalles.Count));
+
+            CreateMap<NotaCreditoResponseDTO, NotaCreditoDetailsViewModel>()
+                .ForMember(dest => dest.FacturaOriginalNumero,
+                    opt => opt.MapFrom(src => src.FacturaOriginalId.ToString()))
+                .ForMember(dest => dest.Detalles,
+                    opt => opt.MapFrom(src => src.Detalles));
+
+            CreateMap<NotaCreditoDetalleResponseDTO, NotaCreditoDetalleViewModel>();
+
+            //nota de credito a DTOs
+            CreateMap<NotaCreditoCreateViewModel, NotaCreditoCreateDTO>()
+                .ForMember(dest => dest.Detalles,
+                    opt => opt.MapFrom(src => src.Detalles.Where(d => d.Seleccionado && d.CantidadAcreditar > 0)));
+
+            CreateMap<NotaCreditoDetalleCreateViewModel, NotaCreditoDetalleCreateDTO>()
+                .ForMember(dest => dest.Cantidad,
+                    opt => opt.MapFrom(src => src.CantidadAcreditar));
         }
     }
 }

@@ -51,6 +51,41 @@ namespace inaApp.Data
                 .HasForeignKey(d => d.ProductoId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            //relación NotaCredito - FacturaOriginal
+            modelBuilder.Entity<NotaCredito>()
+                .HasOne(n => n.FacturaOriginal)
+                .WithMany(f => f.NotasCredito)
+                .HasForeignKey(n => n.FacturaOriginalId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //relación NotaCredito - Cliente
+            modelBuilder.Entity<NotaCredito>()
+                .HasOne(n => n.Cliente)
+                .WithMany()
+                .HasForeignKey(n => n.ClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //relación NotaCredito - NotaCreditoDetalle
+            modelBuilder.Entity<NotaCreditoDetalle>()
+                .HasOne(d => d.NotaCredito)
+                .WithMany(n => n.NotaCreditoDetalles)
+                .HasForeignKey(d => d.NotaCreditoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            //relación NotaCreditoDetalle - FacturaDetalleOriginal
+            modelBuilder.Entity<NotaCreditoDetalle>()
+                .HasOne(d => d.FacturaDetalleOriginal)
+                .WithMany()
+                .HasForeignKey(d => d.FacturaDetalleOriginalId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //relación NotaCreditoDetalle - Producto
+            modelBuilder.Entity<NotaCreditoDetalle>()
+                .HasOne(d => d.Producto)
+                .WithMany()
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             base.OnModelCreating(modelBuilder);
         }
 

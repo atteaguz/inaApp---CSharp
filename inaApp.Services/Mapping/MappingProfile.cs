@@ -59,6 +59,23 @@ namespace inaApp.Services.Mapping
                     opt => opt.MapFrom(src => src.Producto.Nombre));
 
             CreateMap<FacturaDetalleCreateDTO, FacturaDetalle>();
+
+            //Nota de Credito
+            CreateMap<NotaCredito, NotaCreditoResponseDTO>()
+                .ForMember(dest => dest.ClienteNombre,
+                    opt => opt.MapFrom(src => $"{src.Cliente.Nombre} {src.Cliente.PrimerApellido} {src.Cliente.SegundoApellido ?? ""}".Trim()))
+                .ForMember(dest => dest.ClienteCedula,
+                    opt => opt.MapFrom(src => src.Cliente.NumeroIdentificacion))
+                .ForMember(dest => dest.FacturaOriginalNumero,
+                    opt => opt.MapFrom(src => src.FacturaOriginalId.ToString()))
+                .ForMember(dest => dest.Detalles,
+                    opt => opt.MapFrom(src => src.NotaCreditoDetalles));
+
+            CreateMap<NotaCreditoDetalle, NotaCreditoDetalleResponseDTO>()
+                .ForMember(dest => dest.ProductoNombre,
+                    opt => opt.MapFrom(src => src.Producto.Nombre))
+                .ForMember(dest => dest.CantidadOriginal,
+                    opt => opt.MapFrom(src => src.FacturaDetalleOriginal.Cantidad));
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using inaApp.Common.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace InaApp.ProyectoINAApp.Models.Producto
 {
@@ -28,5 +29,20 @@ namespace InaApp.ProyectoINAApp.Models.Producto
 
         [Display(Name = "Categoría")]
         public int CategoriaId { get; set; }
+
+        //campos agregados para el impuesto y descuento
+        [Display(Name = "Tipo de Impuesto")]
+        [Required(ErrorMessage = "El tipo de impuesto es obligatorio")]
+        public TipoImpuestoEnum TipoImpuesto { get; set; }
+
+        [Display(Name = "Porcentaje de Impuesto")]
+        [Required(ErrorMessage = "El porcentaje de impuesto es obligatorio")]
+        [Range(0, 100, ErrorMessage = "El porcentaje de impuesto debe estar entre 0 y 100")]
+        public decimal PorcentajeImpuesto { get; set; }
+
+        [Display(Name = "Descuento Máximo Permitido")]
+        [Required(ErrorMessage = "El descuento máximo es obligatorio")]
+        [Range(0, 100, ErrorMessage = "El descuento máximo debe estar entre 0 y 100")]
+        public decimal DescuentoMaximo { get; set; }
     }
 }

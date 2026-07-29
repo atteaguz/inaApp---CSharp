@@ -1,0 +1,195 @@
+﻿@using InaApp.ProyectoINAApp.Models.Factura
+
+@model NotaCreditoCreateViewModel
+
+@{
+    ViewData["Title"] = "Crear Nota de Crédito";
+}
+
+<div class="container mt-4">
+    <h2>Crear Nota de Crédito</h2>
+    <hr />
+
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <div class="alert alert-danger">@Model.Error</div>
+    }
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <strong>Información de la Factura Original</strong>
+                </div>
+                <div class="card-body">
+                    <p><strong>Factura #:</strong> @Model.FacturaOriginalNumero</p>
+                    <p><strong>Cliente:</strong> @Model.ClienteNombre</p>
+                    <p><strong>Cédula:</strong> @Model.ClienteCedula</p>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <strong>Motivo de la Nota de Crédito</strong>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" id="notaForm">
+                        <input type="hidden" asp-for="FacturaOriginalId" />
+
+                        <div class="mb-3">
+                            <label asp-for="Motivo" class="form-label"></label>
+                            <textarea asp-for="Motivo" class="form-control" rows="3" placeholder="Describa el motivo de la nota de credito..."></textarea>
+                            <span asp-validation-for="Motivo" class="text-danger"></span>
+                            <small class="text-muted">Maximo 1000 caracteres</small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <strong>Productos a Acreditar</strong>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered" id="detalleTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th style="width:40px;">
+                                        <input type="checkbox" id="seleccionarTodos" checked onchange="seleccionarTodosProductos()" />
+                                    </th>
+                                    <th>Producto</th>
+                                    <th class="text-center">Original</th>
+                                    <th class="text-center">A Acreditar</th>
+                                    <th class="text-end">Precio</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Detalles.Count; i++)
+                                {
+                                    <tr id="fila-@Model.Detalles[i].ProductoId">
+                                        <td class="text-center">
+                                            <input type="checkbox" name="Detalles[@i].Seleccionado" value="true" @(Model.Detalles[i].Seleccionado ? "checked" : "") onchange="recalcularTotales()" />
+                                            <input type="hidden" name="Detalles[@i].Seleccionado" value="false" />
+                                        </td>
+                                        <td>@Model.Detalles[i].ProductoNombre</td>
+                                        <td class="text-center">@Model.Detalles[i].CantidadOriginal</td>
+                                        <td class="text-center">
+                                            <input type="number" name="Detalles[@i].CantidadAcreditar"
+                                                   class="form-control form-control-sm text-center"
+                                                   style="width:70px;display:inline-block;"
+                                                   value="@Model.Detalles[i].CantidadAcreditar"
+                                                   min="1" max="@Model.Detalles[i].CantidadOriginal"
+                                                   onchange="recalcularTotales()" />
+                                            <input type="hidden" name="Detalles[@i].FacturaDetalleOriginalId" value="@Model.Detalles[i].FacturaDetalleOriginalId" />
+                                            <input type="hidden" name="Detalles[@i].ProductoId" value="@Model.Detalles[i].ProductoId" />
+                                            <input type="hidden" name="Detalles[@i].ProductoNombre" value="@Model.Detalles[i].ProductoNombre" />
+                                            <input type="hidden" name="Detalles[@i].CantidadOriginal" value="@Model.Detalles[i].CantidadOriginal" />
+                                            <input type="hidden" name="Detalles[@i].PrecioUnitario" value="@Model.Detalles[i].PrecioUnitario" />
+                                            <input type="hidden" name="Detalles[@i].Subtotal" value="@Model.Detalles[i].Subtotal" />
+                                            <input type="hidden" name="Detalles[@i].PorcentajeImpuesto" value="@Model.Detalles[i].PorcentajeImpuesto" />
+                                            <input type="hidden" name="Detalles[@i].MontoImpuesto" value="@Model.Detalles[i].MontoImpuesto" />
+                                            <input type="hidden" name="Detalles[@i].DescuentoAplicado" value="@Model.Detalles[i].DescuentoAplicado" />
+                                            <input type="hidden" name="Detalles[@i].TotalLinea" value="@Model.Detalles[i].TotalLinea" />
+                                        </td>
+                                        <td class="text-end">₡@Model.Detalles[i].PrecioUnitario.ToString("N2")</td>
+                                        <td class="text-end subtotal-linea">₡@Model.Detalles[i].Subtotal.ToString("N2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <hr />
+                    <div class="row">
+                        <div class="col-6 text-end fw-bold">Subtotal:</div>
+                        <div class="col-6 text-end" id="lblSubtotal">₡@Model.Subtotal.ToString("N2")</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 text-end fw-bold">Descuento:</div>
+                        <div class="col-6 text-end text-success" id="lblDescuento">- ₡@Model.Descuento.ToString("N2")</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 text-end fw-bold">Impuesto Total:</div>
+                        <div class="col-6 text-end" id="lblImpuesto">₡@Model.ImpuestoTotal.ToString("N2")</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 text-end fw-bold fs-5">Total a Acreditar:</div>
+                        <div class="col-6 text-end fs-5 fw-bold text-primary" id="lblTotal">₡@Model.Total.ToString("N2")</div>
+                    </div>
+
+                    <hr />
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" asp-controller="Factura" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-success btn-lg" onclick="document.getElementById('notaForm').submit();">
+                            <i class="bi bi-check-circle"></i> Crear Nota de Credito
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function seleccionarTodosProductos() {
+            var checked = document.getElementById('seleccionarTodos').checked;
+            var checkboxes = document.querySelectorAll('input[name$=".Seleccionado"]');
+            checkboxes.forEach(function(cb) {
+                if (cb.type === 'checkbox') {
+                    cb.checked = checked;
+                }
+            });
+            recalcularTotales();
+        }
+
+        function recalcularTotales() {
+            var subtotal = 0;
+            var descuento = 0;
+            var impuesto = 0;
+
+            var filas = document.querySelectorAll('#detalleTable tbody tr');
+            filas.forEach(function(fila) {
+                var checkbox = fila.querySelector('input[name$=".Seleccionado"]');
+                var cantidadInput = fila.querySelector('input[name$=".CantidadAcreditar"]');
+                var precioText = fila.querySelector('.subtotal-linea').textContent.replace('₡', '').replace(',', '').trim();
+                var precio = parseFloat(precioText) || 0;
+                var porcentajeImpuesto = parseFloat(fila.querySelector('input[name$=".PorcentajeImpuesto"]').value) || 0;
+                var descuentoAplicado = parseFloat(fila.querySelector('input[name$=".DescuentoAplicado"]').value) || 0;
+
+                if (checkbox && checkbox.checked && cantidadInput) {
+                    var cantidad = parseInt(cantidadInput.value) || 0;
+                    var cantidadOriginal = parseInt(fila.querySelector('input[name$=".CantidadOriginal"]').value) || 0;
+
+                    if (cantidad > 0 && cantidad <= cantidadOriginal) {
+                        var subtotalLinea = cantidad * precio;
+                        var descuentoLinea = (subtotalLinea / (cantidadOriginal * precio)) * descuentoAplicado;
+                        var impuestoLinea = (subtotalLinea - descuentoLinea) * (porcentajeImpuesto / 100);
+
+                        subtotal += subtotalLinea;
+                        descuento += descuentoLinea;
+                        impuesto += impuestoLinea;
+                    }
+                }
+            });
+
+            var total = subtotal - descuento + impuesto;
+
+            document.getElementById('lblSubtotal').textContent = '₡' + subtotal.toFixed(2);
+            document.getElementById('lblDescuento').textContent = '- ₡' + descuento.toFixed(2);
+            document.getElementById('lblImpuesto').textContent = '₡' + impuesto.toFixed(2);
+            document.getElementById('lblTotal').textContent = '₡' + total.toFixed(2);
+        }
+
+        //recalcular al cambiar cantidades
+        document.addEventListener('DOMContentLoaded', function() {
+            recalcularTotales();
+        });
+    </script>
+}

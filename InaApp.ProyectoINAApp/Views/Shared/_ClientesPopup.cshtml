@@ -1,0 +1,121 @@
+﻿@using inaApp.DTOs.Cliente
+@model List<ClienteResponseDTO>
+
+<div class="modal-header">
+    <h5 class="modal-title">Seleccionar Cliente</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <div class="mb-3">
+        <div class="input-group">
+            <input type="text" id="buscarClienteInput" class="form-control" placeholder="Buscar por nombre o cedula..." value="@ViewBag.Termino" />
+            <button class="btn btn-primary" onclick="buscarClientes()">
+                <i class="bi bi-search"></i> Buscar
+            </button>
+            <button class="btn btn-secondary" onclick="limpiarBusquedaClientes()">
+                <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+            </button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Id</th>
+                    <th>Nombre</th>
+                    <th>Cédula</th>
+                    <th>Teléfono</th>
+                    <th>Correo</th>
+                    <th class="text-center">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var cliente in Model)
+                    {
+                        <tr>
+                            <td>@cliente.IdCliente</td>
+                            <td>@cliente.Nombre @cliente.PrimerApellido @cliente.SegundoApellido</td>
+                            <td>@cliente.NumeroIdentificacion</td>
+                            <td>@cliente.Telefono</td>
+                            <td>@cliente.CorreoElectronico</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-success btn-sm" onclick="seleccionarCliente(@cliente.IdCliente, '@cliente.Nombre @cliente.PrimerApellido @cliente.SegundoApellido')">
+                                    <i class="bi bi-check-circle"></i> Seleccionar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center">No se encontraron clientes.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- paginacion -->
+    @if (ViewBag.TotalPages > 1)
+    {
+        <nav>
+            <ul class="pagination justify-content-center">
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                        <a class="page-link" href="#" onclick="cargarPaginaClientes(@i)">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>
+
+<script>
+    let terminoCliente = '@ViewBag.Termino';
+    let paginaActualCliente = @ViewBag.CurrentPage;
+
+    function seleccionarCliente(id, nombre) {
+        //actualizar el campo oculto y el label en el formulario principal
+        window.opener.document.getElementById('ClienteId').value = id;
+        window.opener.document.getElementById('clienteSeleccionado').innerHTML = `<span class="badge bg-success"><i class="bi bi-person-check"></i> ${nombre}</span>`;
+        window.opener.document.getElementById('clienteSeleccionado').style.display = 'block';
+        window.opener.document.getElementById('seleccionarClienteBtn').style.display = 'none';
+
+        //cerrar el modal
+        var modal = bootstrap.Modal.getInstance(document.getElementById('clientesModal'));
+        modal.hide();
+
+        //mensaje de exito
+        window.opener.mostrarMensaje('Cliente seleccionado correctamente', 'success');
+    }
+
+    function buscarClientes() {
+        var termino = document.getElementById('buscarClienteInput').value;
+        cargarPaginaClientes(1, termino);
+    }
+
+    function limpiarBusquedaClientes() {
+        document.getElementById('buscarClienteInput').value = '';
+        cargarPaginaClientes(1, '');
+    }
+
+    function cargarPaginaClientes(page, termino) {
+        if (!termino) {
+            termino = document.getElementById('buscarClienteInput').value || '';
+        }
+
+        fetch(`@Url.Action("BuscarClientes", "Factura")?termino=${encodeURIComponent(termino)}&page=${page}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('clientesPopupContent').innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+</script>

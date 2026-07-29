@@ -1,24 +1,21 @@
 ﻿@using InaApp.ProyectoINAApp.Models.Factura
 
-@model FacturaDetailsViewModel
+@model NotaCreditoDetailsViewModel
 
 @{
-    ViewData["Title"] = $"Factura #{Model.Id}";
+    ViewData["Title"] = $"Nota de Crédito #{Model.Id}";
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Factura #@Model.Id</h2>
+        <h2>Nota de Crédito #@Model.Id</h2>
         <div>
             <a asp-action="Index" class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Volver
             </a>
-            @if (Model.Estado)
-            {
-                <a asp-action="Anular" asp-route-id="@Model.Id" class="btn btn-danger">
-                    <i class="bi bi-x-circle"></i> Anular
-                </a>
-            }
+            <a asp-controller="Factura" asp-action="Details" asp-route-id="@Model.FacturaOriginalId" class="btn btn-info">
+                <i class="bi bi-receipt"></i> Ver Factura Original
+            </a>
         </div>
     </div>
 
@@ -35,7 +32,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-4 fw-bold"># Factura:</div>
+                        <div class="col-4 fw-bold"># Nota:</div>
                         <div class="col-8">@Model.Id</div>
                     </div>
                     <div class="row">
@@ -43,10 +40,14 @@
                         <div class="col-8">@Model.Fecha.ToString("dd/MM/yyyy HH:mm")</div>
                     </div>
                     <div class="row">
-                        <div class="col-4 fw-bold">Estado:</div>
+                        <div class="col-4 fw-bold">Tipo:</div>
                         <div class="col-8">
-                            <span class="badge bg-@Model.EstadoBadge">@Model.EstadoTexto</span>
+                            <span class="badge bg-warning text-dark">@Model.TipoDocumento</span>
                         </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 fw-bold">Factura Original:</div>
+                        <div class="col-8">#@Model.FacturaOriginalNumero</div>
                     </div>
                     <div class="row">
                         <div class="col-4 fw-bold">Fecha Creación:</div>
@@ -70,14 +71,15 @@
                         <div class="col-4 fw-bold">Cédula:</div>
                         <div class="col-8">@Model.ClienteCedula</div>
                     </div>
-                    <div class="row">
-                        <div class="col-4 fw-bold">Teléfono:</div>
-                        <div class="col-8">@(Model.ClienteTelefono ?? "No registrado")</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4 fw-bold">Correo:</div>
-                        <div class="col-8">@(Model.ClienteCorreo ?? "No registrado")</div>
-                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header bg-light">
+                    <strong>Motivo</strong>
+                </div>
+                <div class="card-body">
+                    <p>@Model.Motivo</p>
                 </div>
             </div>
         </div>
@@ -85,7 +87,7 @@
 
     <div class="card mt-4">
         <div class="card-header bg-light">
-            <strong>Detalle de la Factura</strong>
+            <strong>Detalle de la Nota de Crédito</strong>
         </div>
         <div class="card-body">
             @if (Model.Detalles != null && Model.Detalles.Any())
@@ -95,9 +97,12 @@
                         <thead class="table-dark">
                             <tr>
                                 <th>Producto</th>
-                                <th class="text-center">Cantidad</th>
+                                <th class="text-center">Cantidad Original</th>
+                                <th class="text-center">Cantidad Acreditada</th>
                                 <th class="text-end">Precio Unitario</th>
                                 <th class="text-end">Subtotal</th>
+                                <th class="text-end">Impuesto</th>
+                                <th class="text-end">Total</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -105,24 +110,37 @@
                             {
                                 <tr>
                                     <td>@detalle.ProductoNombre</td>
+                                    <td class="text-center">@detalle.CantidadOriginal</td>
                                     <td class="text-center">@detalle.Cantidad</td>
                                     <td class="text-end">₡@detalle.PrecioUnitario.ToString("N2")</td>
                                     <td class="text-end">₡@detalle.Subtotal.ToString("N2")</td>
+                                    <td class="text-end">₡@detalle.MontoImpuesto.ToString("N2")</td>
+                                    <td class="text-end">₡@detalle.TotalLinea.ToString("N2")</td>
                                 </tr>
                             }
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="3" class="text-end fw-bold">Subtotal:</td>
+                                <td colspan="4" class="text-end fw-bold">Subtotal:</td>
                                 <td class="text-end">₡@Model.Subtotal.ToString("N2")</td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
                             </tr>
                             <tr>
-                                <td colspan="3" class="text-end fw-bold text-success">Descuento (5%):</td>
+                                <td colspan="4" class="text-end fw-bold text-success">Descuento:</td>
                                 <td class="text-end text-success">- ₡@Model.Descuento.ToString("N2")</td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
                             </tr>
                             <tr>
-                                <td colspan="3" class="text-end fw-bold fs-5">Total:</td>
-                                <td class="text-end fs-5 fw-bold text-primary">₡@Model.Total.ToString("N2")</td>
+                                <td colspan="4" class="text-end fw-bold">Impuesto Total:</td>
+                                <td class="text-end">₡@Model.ImpuestoTotal.ToString("N2")</td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold fs-5">Total Acreditado:</td>
+                                <td class="text-end fs-5 fw-bold text-primary" colspan="3">₡@Model.Total.ToString("N2")</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -130,7 +148,7 @@
             }
             else
             {
-                <p class="text-center text-muted">No hay productos en esta factura.</p>
+                <p class="text-center text-muted">No hay productos en esta nota de credito.</p>
             }
         </div>
     </div>
@@ -138,52 +156,4 @@
     <div class="mt-3">
         <a asp-action="Index" class="btn btn-secondary">Volver a la lista</a>
     </div>
-
-    @if (Model.Estado)
-    {
-        <a asp-controller="NotaCredito" asp-action="Create" asp-route-facturaId="@Model.Id" class="btn btn-warning">
-            <i class="bi bi-pencil-square"></i> Generar Nota de Crédito
-        </a>
-    }
-
-    <!-- seccion de notas de credito asociadas -->
-    @if (Model.NotasCredito != null && Model.NotasCredito.Any())
-    {
-        <div class="card mt-4">
-            <div class="card-header bg-light">
-                <strong>Notas de Crédito Asociadas</strong>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm table-bordered">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>#</th>
-                                <th>Fecha</th>
-                                <th>Motivo</th>
-                                <th class="text-end">Total</th>
-                                <th class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var nota in Model.NotasCredito)
-                            {
-                                <tr>
-                                    <td>@nota.Id</td>
-                                    <td>@nota.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
-                                    <td>@nota.Motivo</td>
-                                    <td class="text-end">₡@nota.Total.ToString("N2")</td>
-                                    <td class="text-center">
-                                        <a asp-controller="NotaCredito" asp-action="Details" asp-route-id="@nota.Id" class="btn btn-info btn-sm">
-                                            <i class="bi bi-eye"></i> Ver
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    }
 </div>

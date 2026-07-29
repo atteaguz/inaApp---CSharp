@@ -37,5 +37,6 @@ namespace inaApp.Entities
         [ForeignKey("ClienteId")]
         public Cliente Cliente { get; set; }
         public ICollection<FacturaDetalle> FacturaDetalles { get; set; } = new List<FacturaDetalle>();
+        public ICollection<NotaCredito> NotasCredito { get; set; } = new List<NotaCredito>();
     }
 }

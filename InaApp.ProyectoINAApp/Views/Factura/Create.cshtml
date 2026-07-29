@@ -20,6 +20,11 @@
         <div class="alert alert-warning">Debe agregar al menos un producto</div>
     }
 
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success">@TempData["Mensaje"]</div>
+    }
+
     <div class="row">
         <div class="col-md-6">
             <div class="card">
@@ -30,38 +35,48 @@
                     <form asp-action="Create" method="post" id="facturaForm">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
+                        <!-- seleccion de cliente con popup -->
                         <div class="mb-3">
-                            <label asp-for="ClienteId" class="form-label"></label>
-                            <select asp-for="ClienteId" class="form-control" asp-items="Model.ClientesList">
-                                <option value="">-- Seleccione un cliente --</option>
-                            </select>
+                            <label class="form-label">Cliente</label>
+                            <div class="input-group">
+                                <input type="hidden" id="ClienteId" name="ClienteId" value="@Model.ClienteId" />
+                                <span id="clienteSeleccionado" class="form-control" style="background-color: #f8f9fa;">
+                                    @if (Model.ClienteId > 0)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-person-check"></i> @Model.ClientesList.FirstOrDefault(c => c.Value == Model.ClienteId.ToString())?.Text
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Ningun cliente seleccionado</span>
+                                    }
+                                </span>
+                                <button type="button" id="seleccionarClienteBtn" class="btn btn-outline-primary" onclick="abrirPopupClientes()" @(Model.ClienteId > 0 ? "style=display:none;" : "")>
+                                    <i class="bi bi-search"></i> Seleccionar Cliente
+                                </button>
+                                @if (Model.ClienteId > 0)
+                                {
+                                    <button type="button" class="btn btn-outline-danger" onclick="limpiarCliente()">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                }
+                            </div>
                             <span asp-validation-for="ClienteId" class="text-danger"></span>
                         </div>
 
                         <hr />
                         <h5>Agregar Productos</h5>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label asp-for="ProductoId" class="form-label"></label>
-                                    <select asp-for="ProductoId" class="form-control" asp-items="Model.ProductosList">
-                                        <option value="">-- Seleccione un producto --</option>
-                                    </select>
-                                    <span asp-validation-for="ProductoId" class="text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label asp-for="Cantidad" class="form-label"></label>
-                                    <input asp-for="Cantidad" class="form-control" type="number" min="1" value="1" />
-                                    <span asp-validation-for="Cantidad" class="text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button type="submit" formaction="@Url.Action("AddProduct")" class="btn btn-success w-100 mb-3">
-                                    <i class="bi bi-plus-circle"></i> Agregar
+                        <!-- seleccion de producto con popup -->
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <button type="button" class="btn btn-success" onclick="abrirPopupProductos()">
+                                    <i class="bi bi-plus-circle"></i> Buscar Producto
                                 </button>
+                                <span class="form-control bg-light" id="productoSeleccionadoInfo">
+                                    <span class="text-muted">Ningun producto seleccionado</span>
+                                </span>
                             </div>
                         </div>
 
@@ -72,6 +87,10 @@
                             <input type="hidden" name="Detalles[@i].Cantidad" value="@Model.Detalles[i].Cantidad" />
                             <input type="hidden" name="Detalles[@i].PrecioUnitario" value="@Model.Detalles[i].PrecioUnitario" />
                             <input type="hidden" name="Detalles[@i].Subtotal" value="@Model.Detalles[i].Subtotal" />
+                            <input type="hidden" name="Detalles[@i].PorcentajeImpuesto" value="@Model.Detalles[i].PorcentajeImpuesto" />
+                            <input type="hidden" name="Detalles[@i].MontoImpuesto" value="@Model.Detalles[i].MontoImpuesto" />
+                            <input type="hidden" name="Detalles[@i].DescuentoAplicado" value="@Model.Detalles[i].DescuentoAplicado" />
+                            <input type="hidden" name="Detalles[@i].TotalLinea" value="@Model.Detalles[i].TotalLinea" />
                         }
                     </form>
                 </div>
@@ -87,24 +106,28 @@
                     @if (Model.TieneDetalles)
                     {
                         <div class="table-responsive">
-                            <table class="table table-sm table-bordered">
+                            <table class="table table-sm table-bordered" id="detalleTable">
                                 <thead class="table-dark">
                                     <tr>
                                         <th>Producto</th>
                                         <th class="text-center">Cant</th>
                                         <th class="text-end">Precio</th>
                                         <th class="text-end">Subtotal</th>
+                                        <th class="text-end">Impuesto</th>
+                                        <th class="text-end">Total</th>
                                         <th class="text-center">Acción</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="detalleBody">
                                     @for (int i = 0; i < Model.Detalles.Count; i++)
                                     {
-                                        <tr>
+                                        <tr id="fila-@Model.Detalles[i].ProductoId">
                                             <td>@Model.Detalles[i].ProductoNombre</td>
                                             <td class="text-center">@Model.Detalles[i].Cantidad</td>
                                             <td class="text-end">₡@Model.Detalles[i].PrecioUnitario.ToString("N2")</td>
                                             <td class="text-end">₡@Model.Detalles[i].Subtotal.ToString("N2")</td>
+                                            <td class="text-end">₡@Model.Detalles[i].MontoImpuesto.ToString("N2")</td>
+                                            <td class="text-end">₡@Model.Detalles[i].TotalLinea.ToString("N2")</td>
                                             <td class="text-center">
                                                 <form asp-action="RemoveProduct" method="post" style="display:inline;">
                                                     <input type="hidden" name="productoId" value="@Model.Detalles[i].ProductoId" />
@@ -117,6 +140,10 @@
                                                             <input type="hidden" name="Detalles[@j].Cantidad" value="@Model.Detalles[j].Cantidad" />
                                                             <input type="hidden" name="Detalles[@j].PrecioUnitario" value="@Model.Detalles[j].PrecioUnitario" />
                                                             <input type="hidden" name="Detalles[@j].Subtotal" value="@Model.Detalles[j].Subtotal" />
+                                                            <input type="hidden" name="Detalles[@j].PorcentajeImpuesto" value="@Model.Detalles[j].PorcentajeImpuesto" />
+                                                            <input type="hidden" name="Detalles[@j].MontoImpuesto" value="@Model.Detalles[j].MontoImpuesto" />
+                                                            <input type="hidden" name="Detalles[@j].DescuentoAplicado" value="@Model.Detalles[j].DescuentoAplicado" />
+                                                            <input type="hidden" name="Detalles[@j].TotalLinea" value="@Model.Detalles[j].TotalLinea" />
                                                         }
                                                     }
                                                     <input type="hidden" name="ClienteId" value="@Model.ClienteId" />
@@ -134,15 +161,19 @@
                         <hr />
                         <div class="row">
                             <div class="col-6 text-end fw-bold">Subtotal:</div>
-                            <div class="col-6 text-end">₡@Model.Subtotal.ToString("N2")</div>
+                            <div class="col-6 text-end" id="lblSubtotal">₡@Model.Subtotal.ToString("N2")</div>
                         </div>
                         <div class="row">
-                            <div class="col-6 text-end fw-bold">Descuento (5%):</div>
-                            <div class="col-6 text-end text-success">- ₡@Model.Descuento.ToString("N2")</div>
+                            <div class="col-6 text-end fw-bold">Descuento:</div>
+                            <div class="col-6 text-end text-success" id="lblDescuento">- ₡@Model.Descuento.ToString("N2")</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 text-end fw-bold">Impuesto Total:</div>
+                            <div class="col-6 text-end" id="lblImpuesto">₡@Model.ImpuestoTotal.ToString("N2")</div>
                         </div>
                         <div class="row">
                             <div class="col-6 text-end fw-bold fs-5">Total:</div>
-                            <div class="col-6 text-end fs-5 fw-bold text-primary">₡@Model.Total.ToString("N2")</div>
+                            <div class="col-6 text-end fs-5 fw-bold text-primary" id="lblTotal">₡@Model.Total.ToString("N2")</div>
                         </div>
 
                         <hr />
@@ -178,6 +209,193 @@
     </div>
 </div>
 
+<!-- modales para los popups -->
+<div class="modal fade" id="clientesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="clientesPopupContent">
+            <!-- contenido cargado usando AJAX -->
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Cargando clientes...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="productosModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content" id="productosPopupContent">
+            <!-- contenido cargado usando AJAX -->
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Cargando productos...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        //funciones para el popup de clientes
+        function abrirPopupClientes() {
+            var modal = new bootstrap.Modal(document.getElementById('clientesModal'));
+            modal.show();
+
+            //cargar contenido
+            fetch('@Url.Action("BuscarClientes", "Factura")')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('clientesPopupContent').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function limpiarCliente() {
+            document.getElementById('ClienteId').value = '';
+            document.getElementById('clienteSeleccionado').innerHTML = '<span class="text-muted">Ningun cliente seleccionado</span>';
+            document.getElementById('seleccionarClienteBtn').style.display = '';
+        }
+
+        //funciones para el popup de productos
+        function abrirPopupProductos() {
+            var modal = new bootstrap.Modal(document.getElementById('productosModal'));
+            modal.show();
+
+            //cargar contenido
+            fetch('@Url.Action("BuscarProductos", "Factura")')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('productosPopupContent').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // funcion para agregar productos al detalle
+        function agregarProductoDetalle(productoId, nombre, cantidad, precio, stock, tipoImpuesto, porcentajeImpuesto, descuentoMaximo) {
+            //calcular valores
+            var subtotal = cantidad * precio;
+            var impuesto = subtotal * (porcentajeImpuesto / 100);
+            var totalLinea = subtotal + impuesto;
+
+            //obtener el formulario y los campos ocultos
+            var form = document.getElementById('facturaForm');
+
+            //crear fila en la tabla
+            var tbody = document.getElementById('detalleBody');
+            var row = document.createElement('tr');
+            row.id = 'fila-' + productoId;
+
+            row.innerHTML = `
+                        <td>${nombre}</td>
+                        <td class="text-center">${cantidad}</td>
+                        <td class="text-end">₡${precio.toFixed(2)}</td>
+                        <td class="text-end">₡${subtotal.toFixed(2)}</td>
+                        <td class="text-end">₡${impuesto.toFixed(2)}</td>
+                        <td class="text-end">₡${totalLinea.toFixed(2)}</td>
+                        <td class="text-center">
+                            <form asp-action="RemoveProduct" method="post" style="display:inline;" onsubmit="return true;">
+                                <input type="hidden" name="productoId" value="${productoId}" />
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    `;
+
+            tbody.appendChild(row);
+
+            //agregar campos ocultos al formulario
+            var index = document.querySelectorAll('input[name$=".ProductoId"]').length;
+
+            var hiddenFields = [
+                { name: `Detalles[${index}].ProductoId`, value: productoId },
+                { name: `Detalles[${index}].ProductoNombre`, value: nombre },
+                { name: `Detalles[${index}].Cantidad`, value: cantidad },
+                { name: `Detalles[${index}].PrecioUnitario`, value: precio },
+                { name: `Detalles[${index}].Subtotal`, value: subtotal },
+                { name: `Detalles[${index}].PorcentajeImpuesto`, value: porcentajeImpuesto },
+                { name: `Detalles[${index}].MontoImpuesto`, value: impuesto },
+                { name: `Detalles[${index}].DescuentoAplicado`, value: 0 },
+                { name: `Detalles[${index}].TotalLinea`, value: totalLinea }
+            ];
+
+            hiddenFields.forEach(field => {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = field.name;
+                input.value = field.value;
+                form.appendChild(input);
+            });
+
+            //actualizar totales
+            actualizarTotales();
+
+            //mostrar mensaje
+            mostrarMensaje(`Producto "${nombre}" agregado correctamente`, 'success');
+        }
+
+        //funcion para actualizar los totales de la factura
+        function actualizarTotales() {
+            var subtotal = 0;
+            var impuestoTotal = 0;
+
+            //sumar subtotales e impuestos de la tabla
+            var filas = document.querySelectorAll('#detalleBody tr');
+            filas.forEach(function(fila) {
+                var celdas = fila.querySelectorAll('td');
+                if (celdas.length >= 6) {
+                    var subtotalText = celdas[3].textContent.replace('₡', '').replace(',', '').trim();
+                    var impuestoText = celdas[4].textContent.replace('₡', '').replace(',', '').trim();
+                    subtotal += parseFloat(subtotalText) || 0;
+                    impuestoTotal += parseFloat(impuestoText) || 0;
+                }
+            });
+
+            //calcular descuento
+            var descuento = subtotal * 0.05;
+            var total = subtotal + impuestoTotal - descuento;
+
+            //actualizar labels
+            document.getElementById('lblSubtotal').textContent = '₡' + subtotal.toFixed(2);
+            document.getElementById('lblDescuento').textContent = '- ₡' + descuento.toFixed(2);
+            document.getElementById('lblImpuesto').textContent = '₡' + impuestoTotal.toFixed(2);
+            document.getElementById('lblTotal').textContent = '₡' + total.toFixed(2);
+        }
+
+        //funcion para mostrar mensajes
+        function mostrarMensaje(mensaje, tipo) {
+            var alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-' + tipo + ' alert-dismissible fade show';
+            alertDiv.role = 'alert';
+            alertDiv.innerHTML = `
+                        ${mensaje}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+
+            var container = document.querySelector('.container.mt-4');
+            container.insertBefore(alertDiv, container.firstChild);
+
+            setTimeout(function() {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        //funciones para popups (definidas globalmente para acceso desde popups)
+        window.abrirPopupClientes = abrirPopupClientes;
+        window.abrirPopupProductos = abrirPopupProductos;
+        window.agregarProductoDetalle = agregarProductoDetalle;
+        window.mostrarMensaje = mostrarMensaje;
+        window.actualizarTotales = actualizarTotales;
+        window.limpiarCliente = limpiarCliente;
+    </script>
 }

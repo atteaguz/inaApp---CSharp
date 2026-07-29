@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using inaApp.Common.Enums;
 using inaApp.Common.Exceptions;
 using inaApp.Common.interfaces;
-using inaApp.DTOs.Producto;
 using inaApp.DTOs.Categoria;
+using inaApp.DTOs.Producto;
+using inaApp.Entities;
 using InaApp.ProyectoINAApp.Models.Producto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -72,6 +74,7 @@ namespace InaApp.ProyectoINAApp.Controllers
         {
             var viewModel = new ProductoCreateViewModel();
             await CargarCategoriasDropDown(viewModel);
+            CargarTiposImpuesto(viewModel);
             return View(viewModel);
         }
 
@@ -85,6 +88,7 @@ namespace InaApp.ProyectoINAApp.Controllers
                 if (!ModelState.IsValid)
                 {
                     await CargarCategoriasDropDown(productoVM);
+                    CargarTiposImpuesto(productoVM);
                     return View(productoVM);
                 }
 
@@ -97,6 +101,7 @@ namespace InaApp.ProyectoINAApp.Controllers
                 if (!response.Success) {
                     ModelState.AddModelError("", response.Message);
                     await CargarCategoriasDropDown(productoVM);
+                    CargarTiposImpuesto(productoVM);
                     return View(productoVM);
                 }
 
@@ -107,6 +112,7 @@ namespace InaApp.ProyectoINAApp.Controllers
             catch
             {
                 await CargarCategoriasDropDown(productoVM);
+                CargarTiposImpuesto(productoVM);
                 return View(productoVM);
             }
         }
@@ -124,7 +130,7 @@ namespace InaApp.ProyectoINAApp.Controllers
 
             var productoVM = _mapper.Map<ProductoEditViewModel>(response.Data);
             await CargarCategoriasDropDown(productoVM, productoVM.CategoriaId);
-
+            CargarTiposImpuesto(productoVM);
             return View(productoVM);
         }
 
@@ -138,6 +144,7 @@ namespace InaApp.ProyectoINAApp.Controllers
                 if (!ModelState.IsValid)
                 {
                     await CargarCategoriasDropDown(productoEditVM, productoEditVM.CategoriaId);
+                    CargarTiposImpuesto(productoEditVM);
                     return View(productoEditVM);
                 }
 
@@ -149,6 +156,7 @@ namespace InaApp.ProyectoINAApp.Controllers
                 {
                     ModelState.AddModelError("", response.Message);
                     await CargarCategoriasDropDown(productoEditVM, productoEditVM.CategoriaId);
+                    CargarTiposImpuesto(productoEditVM);
                     return View(productoEditVM);
                 }
 
@@ -158,6 +166,7 @@ namespace InaApp.ProyectoINAApp.Controllers
             catch
             {
                 await CargarCategoriasDropDown(productoEditVM, productoEditVM.CategoriaId);
+                CargarTiposImpuesto(productoEditVM);
                 return View(productoEditVM);
             }
         }
@@ -243,6 +252,44 @@ namespace InaApp.ProyectoINAApp.Controllers
             {
                 ViewBag.Categorias = new List<SelectListItem>();
             }
+        }
+
+        private void CargarTiposImpuesto(ProductoCreateViewModel viewModel)
+        {
+            viewModel.TiposImpuestoList = Enum.GetValues(typeof(TipoImpuestoEnum))
+                .Cast<TipoImpuestoEnum>()
+                .Select(e => new SelectListItem
+                {
+                    Value = ((int)e).ToString(),
+                    Text = e switch
+                    {
+                        TipoImpuestoEnum.Exento => "Exento (0%)",
+                        TipoImpuestoEnum.IVA => "IVA",
+                        TipoImpuestoEnum.Selectivo => "Selectivo de Consumo",
+                        _ => e.ToString()
+                    },
+                    Selected = e == viewModel.TipoImpuesto
+                })
+                .ToList();
+        }
+
+        private void CargarTiposImpuesto(ProductoEditViewModel viewModel)
+        {
+            ViewBag.TiposImpuestoList = Enum.GetValues(typeof(TipoImpuestoEnum))
+                .Cast<TipoImpuestoEnum>()
+                .Select(e => new SelectListItem
+                {
+                    Value = ((int)e).ToString(),
+                    Text = e switch
+                    {
+                        TipoImpuestoEnum.Exento => "Exento (0%)",
+                        TipoImpuestoEnum.IVA => "IVA",
+                        TipoImpuestoEnum.Selectivo => "Selectivo de Consumo",
+                        _ => e.ToString()
+                    },
+                    Selected = e == viewModel.TipoImpuesto
+                })
+                .ToList();
         }
     }
 }

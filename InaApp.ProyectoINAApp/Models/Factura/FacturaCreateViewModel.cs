@@ -20,8 +20,10 @@ namespace InaApp.ProyectoINAApp.Models.Factura
         public List<FacturaDetalleViewModel> Detalles { get; set; } = new List<FacturaDetalleViewModel>();
         [Display(Name = "Subtotal")]
         public decimal Subtotal { get; set; }
-        [Display(Name = "Descuento (5%)")]
+        [Display(Name = "Descuento")]
         public decimal Descuento { get; set; }
+        [Display(Name = "Impuesto Total")]
+        public decimal ImpuestoTotal { get; set; }
         [Display(Name = "Total")]
         public decimal Total { get; set; }
         public bool TieneDetalles => Detalles != null && Detalles.Any();

@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using inaApp.Common.Exceptions;
+using inaApp.DTOs.Cliente;
 using inaApp.DTOs.Factura;
+using inaApp.DTOs.Producto;
 using inaApp.Services;
 using InaApp.ProyectoINAApp.Models.Factura;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +19,7 @@ namespace InaApp.ProyectoINAApp.Controllers
         private readonly FacturaService _facturaService;
         private readonly ClienteService _clienteService;
         private readonly ProductoService _productoService;
+        private readonly CategoriaService _categoriaService;
         private readonly IMapper _mapper;
 
         private const decimal PORCENTAJE_DESCUENTO = 0.05m;
@@ -25,11 +28,13 @@ namespace InaApp.ProyectoINAApp.Controllers
             FacturaService facturaService,
             ClienteService clienteService,
             ProductoService productoService,
+            CategoriaService categoriaService,
             IMapper mapper)
         {
             _facturaService = facturaService;
             _clienteService = clienteService;
             _productoService = productoService;
+            _categoriaService = categoriaService;
             _mapper = mapper;
         }
 
@@ -335,6 +340,127 @@ namespace InaApp.ProyectoINAApp.Controllers
                 TempData["Error"] = $"Error al anular la factura: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
+        }
+
+        // GET: FacturaController/BuscarClientes (Popup)
+        [HttpGet]
+        public async Task<IActionResult> BuscarClientes(string termino = "", int page = 1, int pageSize = 10)
+        {
+            try
+            {
+                var response = await _clienteService.ObtenerTodosAsync();
+                var clientes = response.Data ?? new List<ClienteResponseDTO>();
+
+                //filtro
+                if (!string.IsNullOrWhiteSpace(termino))
+                {
+                    clientes = clientes.Where(c =>
+                        c.NumeroIdentificacion.Contains(termino, StringComparison.OrdinalIgnoreCase) ||
+                        $"{c.Nombre} {c.PrimerApellido} {c.SegundoApellido ?? ""}".Contains(termino, StringComparison.OrdinalIgnoreCase)
+                    ).ToList();
+                }
+
+                //paginacion
+                var total = clientes.Count;
+                var items = clientes.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+                ViewBag.TotalPages = (int)Math.Ceiling((double)total / pageSize);
+                ViewBag.CurrentPage = page;
+                ViewBag.Termino = termino;
+
+                return PartialView("_ClientesPopup", items);
+            }
+            catch (Exception)
+            {
+                return PartialView("_ClientesPopup", new List<ClienteResponseDTO>());
+            }
+        }
+
+        // GET: FacturaController/BuscarProductos (Popup)
+        [HttpGet]
+        public async Task<IActionResult> BuscarProductos(string termino = "", int categoriaId = 0, int page = 1, int pageSize = 10)
+        {
+            try
+            {
+                var response = await _productoService.ObtenerTodosAsync();
+                var productos = response.Data ?? new List<ProductoResponseDTO>();
+
+                //filtrar solo activos y con stock > 0
+                productos = productos.Where(p => p.Estado && p.Stock > 0).ToList();
+
+                //filtrar por termino
+                if (!string.IsNullOrWhiteSpace(termino))
+                {
+                    productos = productos.Where(p =>
+                        p.Id.ToString().Contains(termino) ||
+                        p.Nombre.Contains(termino, StringComparison.OrdinalIgnoreCase)
+                    ).ToList();
+                }
+
+                //filtrar por categoria
+                if (categoriaId > 0)
+                {
+                    productos = productos.Where(p => p.CategoriaId == categoriaId).ToList();
+                }
+
+                //paginacion
+                var total = productos.Count;
+                var items = productos.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+                ViewBag.TotalPages = (int)Math.Ceiling((double)total / pageSize);
+                ViewBag.CurrentPage = page;
+                ViewBag.Termino = termino;
+                ViewBag.CategoriaId = categoriaId;
+
+                //cargar categorias para el filtro
+                var categoriasResponse = await _categoriaService.ObtenerTodosAsync();
+                ViewBag.CategoriasList = categoriasResponse.Data?.Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Nombre,
+                    Selected = c.Id == categoriaId
+                }).ToList() ?? new List<SelectListItem>();
+
+                return PartialView("_ProductosPopup", items);
+            }
+            catch (Exception)
+            {
+                return PartialView("_ProductosPopup", new List<ProductoResponseDTO>());
+            }
+        }
+
+        // POST: FacturaController/SeleccionarCliente
+        [HttpPost]
+        public IActionResult SeleccionarCliente(int clienteId, string clienteNombre)
+        {
+            TempData["ClienteSeleccionadoId"] = clienteId;
+            TempData["ClienteSeleccionadoNombre"] = clienteNombre;
+            return Json(new { success = true });
+        }
+
+        // POST: FacturaController/SeleccionarProducto
+        [HttpPost]
+        public async Task<IActionResult> SeleccionarProducto(int productoId, int cantidad)
+        {
+            var productoResponse = await _productoService.ObtenerPorIdsAsync(productoId);
+            if (!productoResponse.Success)
+            {
+                return Json(new { success = false, error = "Producto no encontrado" });
+            }
+
+            var producto = productoResponse.Data;
+
+            return Json(new
+            {
+                success = true,
+                productoId = producto.Id,
+                productoNombre = producto.Nombre,
+                precio = producto.Precio,
+                stock = producto.Stock,
+                tipoImpuesto = producto.TipoImpuesto.ToString(),
+                porcentajeImpuesto = producto.PorcentajeImpuesto,
+                descuentoMaximo = producto.DescuentoMaximo
+            });
         }
 
         //metodos auxiliares para cargar clientes y productos

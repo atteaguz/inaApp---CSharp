@@ -1,0 +1,84 @@
+﻿@using InaApp.ProyectoINAApp.Models.Factura
+
+@model List<NotaCreditoIndexViewModel>
+
+@{
+    ViewData["Title"] = "Notas de Crédito";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Notas de Crédito</h2>
+        <a asp-action="Index" asp-controller="Factura" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver a Facturas
+        </a>
+    </div>
+
+    @if (ViewBag.Message != null)
+    {
+        <div class="alert alert-info">@ViewBag.Message</div>
+    }
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success">@TempData["Mensaje"]</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Factura Original</th>
+                    <th>Motivo</th>
+                    <th class="text-end">Subtotal</th>
+                    <th class="text-end">Descuento</th>
+                    <th class="text-end">Impuesto</th>
+                    <th class="text-end">Total</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var nota in Model)
+                    {
+                        <tr>
+                            <td>@nota.Id</td>
+                            <td>@nota.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@nota.ClienteNombre</td>
+                            <td>
+                                <a asp-controller="Factura" asp-action="Details" asp-route-id="@nota.FacturaOriginalId" class="text-decoration-none">
+                                    #@nota.FacturaOriginalId
+                                </a>
+                            </td>
+                            <td>@(nota.Motivo.Length > 50 ? nota.Motivo.Substring(0, 50) + "..." : nota.Motivo)</td>
+                            <td class="text-end">₡@nota.Subtotal.ToString("N2")</td>
+                            <td class="text-end text-success">₡@nota.Descuento.ToString("N2")</td>
+                            <td class="text-end">₡@nota.ImpuestoTotal.ToString("N2")</td>
+                            <td class="text-end fw-bold">₡@nota.Total.ToString("N2")</td>
+                            <td class="text-center">
+                                <a asp-action="Details" asp-route-id="@nota.Id" class="btn btn-info btn-sm">
+                                    <i class="bi bi-eye"></i> Detalles
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="10" class="text-center">No existen notas de crédito registradas.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
