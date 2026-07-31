@@ -44,6 +44,7 @@ namespace InaApp.ProyectoINAApp.Extentions
             services.AddScoped<ClienteRepository>();
             services.AddScoped<ProductoService>();
             services.AddScoped<ProductoRepository>();
+            services.AddScoped<CategoriaService>();
 
             //repositorios de nota de credito
             services.AddScoped<NotaCreditoRepository>();

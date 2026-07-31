@@ -32,10 +32,10 @@
                     <strong>Datos de la Factura</strong>
                 </div>
                 <div class="card-body">
+                    <!-- ✅ UN SOLO FORMULARIO -->
                     <form asp-action="Create" method="post" id="facturaForm">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                        <!-- seleccion de cliente con popup -->
                         <div class="mb-3">
                             <label class="form-label">Cliente</label>
                             <div class="input-group">
@@ -49,7 +49,7 @@
                                     }
                                     else
                                     {
-                                        <span class="text-muted">Ningun cliente seleccionado</span>
+                                        <span class="text-muted">Ningún cliente seleccionado</span>
                                     }
                                 </span>
                                 <button type="button" id="seleccionarClienteBtn" class="btn btn-outline-primary" onclick="abrirPopupClientes()" @(Model.ClienteId > 0 ? "style=display:none;" : "")>
@@ -68,18 +68,18 @@
                         <hr />
                         <h5>Agregar Productos</h5>
 
-                        <!-- seleccion de producto con popup -->
                         <div class="mb-3">
                             <div class="input-group">
                                 <button type="button" class="btn btn-success" onclick="abrirPopupProductos()">
                                     <i class="bi bi-plus-circle"></i> Buscar Producto
                                 </button>
                                 <span class="form-control bg-light" id="productoSeleccionadoInfo">
-                                    <span class="text-muted">Ningun producto seleccionado</span>
+                                    <span class="text-muted">Ningún producto seleccionado</span>
                                 </span>
                             </div>
                         </div>
 
+                        <!-- Campos ocultos para los detalles -->
                         @for (int i = 0; i < Model.Detalles.Count; i++)
                         {
                             <input type="hidden" name="Detalles[@i].ProductoId" value="@Model.Detalles[i].ProductoId" />
@@ -92,6 +92,14 @@
                             <input type="hidden" name="Detalles[@i].DescuentoAplicado" value="@Model.Detalles[i].DescuentoAplicado" />
                             <input type="hidden" name="Detalles[@i].TotalLinea" value="@Model.Detalles[i].TotalLinea" />
                         }
+
+                        <!-- ✅ BOTÓN DE GUARDAR DENTRO DEL MISMO FORMULARIO -->
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-success btn-lg" id="btnGuardarFactura">
+                                <i class="bi bi-check-circle"></i> Guardar Factura
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -103,22 +111,24 @@
                     <strong>Detalle de la Factura</strong>
                 </div>
                 <div class="card-body">
-                    @if (Model.TieneDetalles)
-                    {
-                        <div class="table-responsive">
-                            <table class="table table-sm table-bordered" id="detalleTable">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Producto</th>
-                                        <th class="text-center">Cant</th>
-                                        <th class="text-end">Precio</th>
-                                        <th class="text-end">Subtotal</th>
-                                        <th class="text-end">Impuesto</th>
-                                        <th class="text-end">Total</th>
-                                        <th class="text-center">Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="detalleBody">
+                    <!-- ✅ TABLA SIEMPRE VISIBLE -->
+                    <div class="table-responsive" id="contenedorTabla">
+                        <table class="table table-sm table-bordered" id="detalleTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th class="text-center">Cant</th>
+                                    <th class="text-end">Precio</th>
+                                    <th class="text-end">Subtotal</th>
+                                    <th class="text-end">Descuento</th>
+                                    <th class="text-end">Impuesto</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detalleBody">
+                                @if (Model.TieneDetalles)
+                                {
                                     @for (int i = 0; i < Model.Detalles.Count; i++)
                                     {
                                         <tr id="fila-@Model.Detalles[i].ProductoId">
@@ -126,6 +136,7 @@
                                             <td class="text-center">@Model.Detalles[i].Cantidad</td>
                                             <td class="text-end">₡@Model.Detalles[i].PrecioUnitario.ToString("N2")</td>
                                             <td class="text-end">₡@Model.Detalles[i].Subtotal.ToString("N2")</td>
+                                            <td class="text-end">₡@Model.Detalles[i].DescuentoAplicado.ToString("N2")</td>
                                             <td class="text-end">₡@Model.Detalles[i].MontoImpuesto.ToString("N2")</td>
                                             <td class="text-end">₡@Model.Detalles[i].TotalLinea.ToString("N2")</td>
                                             <td class="text-center">
@@ -154,66 +165,48 @@
                                             </td>
                                         </tr>
                                     }
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <hr />
-                        <div class="row">
-                            <div class="col-6 text-end fw-bold">Subtotal:</div>
-                            <div class="col-6 text-end" id="lblSubtotal">₡@Model.Subtotal.ToString("N2")</div>
-                        </div>
-                        <div class="row">
-                            <div class="col-6 text-end fw-bold">Descuento:</div>
-                            <div class="col-6 text-end text-success" id="lblDescuento">- ₡@Model.Descuento.ToString("N2")</div>
-                        </div>
-                        <div class="row">
-                            <div class="col-6 text-end fw-bold">Impuesto Total:</div>
-                            <div class="col-6 text-end" id="lblImpuesto">₡@Model.ImpuestoTotal.ToString("N2")</div>
-                        </div>
-                        <div class="row">
-                            <div class="col-6 text-end fw-bold fs-5">Total:</div>
-                            <div class="col-6 text-end fs-5 fw-bold text-primary" id="lblTotal">₡@Model.Total.ToString("N2")</div>
-                        </div>
-
-                        <hr />
-                        <div class="d-flex justify-content-between">
-                            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-
-                            <form asp-action="Create" method="post">
-                                <input type="hidden" name="ClienteId" value="@Model.ClienteId" />
-
-                                @for (int i = 0; i < Model.Detalles.Count; i++)
-                                {
-                                    <input type="hidden" name="Detalles[@i].ProductoId" value="@Model.Detalles[i].ProductoId" />
-                                    <input type="hidden" name="Detalles[@i].Cantidad" value="@Model.Detalles[i].Cantidad" />
                                 }
+                            </tbody>
+                        </table>
+                    </div>
 
-                                <button type="submit" class="btn btn-success btn-lg">
-                                    <i class="bi bi-check-circle"></i> Guardar Factura
-                                </button>
-                            </form>
-                        </div>
-                    }
-                    else
+                    <!-- ⚠️ Mensaje de "No hay productos" (se oculta automáticamente) -->
+                    @if (!Model.TieneDetalles)
                     {
-                        <div class="text-center text-muted py-4">
+                        <div id="mensajeSinProductos" class="text-center text-muted py-4">
                             <i class="bi bi-cart-plus" style="font-size: 3rem;"></i>
                             <p class="mt-2">No hay productos agregados.</p>
                             <p><small>Seleccione un producto y cantidad para agregar.</small></p>
                         </div>
                     }
+
+                    <hr />
+                    <div class="row">
+                        <div class="col-6 text-end fw-bold">Subtotal:</div>
+                        <div class="col-6 text-end" id="lblSubtotal">₡@(Model.Subtotal.ToString("N2"))</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 text-end fw-bold">Descuento Total:</div>
+                        <div class="col-6 text-end text-success" id="lblDescuento">- ₡@(Model.Descuento.ToString("N2"))</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 text-end fw-bold">Impuesto Total:</div>
+                        <div class="col-6 text-end" id="lblImpuesto">₡@(Model.ImpuestoTotal.ToString("N2"))</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 text-end fw-bold fs-5">Total:</div>
+                        <div class="col-6 text-end fs-5 fw-bold text-primary" id="lblTotal">₡@(Model.Total.ToString("N2"))</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- modales para los popups -->
+<!-- ========== MODALES DE POPUPS ========== -->
 <div class="modal fade" id="clientesModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content" id="clientesPopupContent">
-            <!-- contenido cargado usando AJAX -->
             <div class="modal-body text-center py-5">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Cargando...</span>
@@ -227,7 +220,6 @@
 <div class="modal fade" id="productosModal" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content" id="productosPopupContent">
-            <!-- contenido cargado usando AJAX -->
             <div class="modal-body text-center py-5">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Cargando...</span>
@@ -242,12 +234,14 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        //funciones para el popup de clientes
-        function abrirPopupClientes() {
+        // ============================================================
+        // FUNCIONES PARA POPUP DE CLIENTES
+        // ============================================================
+
+        window.abrirPopupClientes = function() {
             var modal = new bootstrap.Modal(document.getElementById('clientesModal'));
             modal.show();
 
-            //cargar contenido
             fetch('@Url.Action("BuscarClientes", "Factura")')
                 .then(response => response.text())
                 .then(html => {
@@ -256,20 +250,22 @@
                 .catch(error => {
                     console.error('Error:', error);
                 });
-        }
+        };
 
-        function limpiarCliente() {
+        window.limpiarCliente = function() {
             document.getElementById('ClienteId').value = '';
-            document.getElementById('clienteSeleccionado').innerHTML = '<span class="text-muted">Ningun cliente seleccionado</span>';
+            document.getElementById('clienteSeleccionado').innerHTML = '<span class="text-muted">Ningún cliente seleccionado</span>';
             document.getElementById('seleccionarClienteBtn').style.display = '';
-        }
+        };
 
-        //funciones para el popup de productos
-        function abrirPopupProductos() {
+        // ============================================================
+        // FUNCIONES PARA POPUP DE PRODUCTOS
+        // ============================================================
+
+        window.abrirPopupProductos = function() {
             var modal = new bootstrap.Modal(document.getElementById('productosModal'));
             modal.show();
 
-            //cargar contenido
             fetch('@Url.Action("BuscarProductos", "Factura")')
                 .then(response => response.text())
                 .then(html => {
@@ -278,20 +274,65 @@
                 .catch(error => {
                     console.error('Error:', error);
                 });
-        }
+        };
 
-        // funcion para agregar productos al detalle
-        function agregarProductoDetalle(productoId, nombre, cantidad, precio, stock, tipoImpuesto, porcentajeImpuesto, descuentoMaximo) {
-            //calcular valores
+        // ============================================================
+        // FUNCIÓN PARA AGREGAR PRODUCTO AL DETALLE
+        // ============================================================
+
+        window.agregarProductoDetalle = function(productoId, nombre, cantidad, precio, stock, porcentajeImpuesto, descuentoMaximo) {
+            console.log('✅ agregarProductoDetalle EJECUTADA');
+            console.log('📦 Datos:', {
+                productoId, nombre, cantidad, precio, stock, porcentajeImpuesto, descuentoMaximo
+            });
+
+            // ============================================================
+            // 🔢 CÁLCULOS POR PRODUCTO
+            // ============================================================
+
             var subtotal = cantidad * precio;
-            var impuesto = subtotal * (porcentajeImpuesto / 100);
-            var totalLinea = subtotal + impuesto;
+            var descuentoLinea = subtotal * (descuentoMaximo / 100);
+            var subtotalConDescuento = subtotal - descuentoLinea;
+            var impuestoLinea = subtotalConDescuento * (porcentajeImpuesto / 100);
+            var totalLinea = subtotalConDescuento + impuestoLinea;
 
-            //obtener el formulario y los campos ocultos
+            console.log('💰 Cálculos:', {
+                subtotal: subtotal,
+                descuentoLinea: descuentoLinea,
+                subtotalConDescuento: subtotalConDescuento,
+                impuestoLinea: impuestoLinea,
+                totalLinea: totalLinea
+            });
+
+            // ============================================================
+            // 📋 AGREGAR A LA TABLA
+            // ============================================================
+
             var form = document.getElementById('facturaForm');
-
-            //crear fila en la tabla
             var tbody = document.getElementById('detalleBody');
+
+            if (!form || !tbody) {
+                console.error('❌ Error: No se encontró el formulario o la tabla');
+                alert('Error: No se encontró el formulario de la factura');
+                return;
+            }
+
+            // Verificar duplicado
+            var productosExistentes = document.querySelectorAll('input[name$=".ProductoId"]');
+            for (var i = 0; i < productosExistentes.length; i++) {
+                if (parseInt(productosExistentes[i].value) === productoId) {
+                    alert('El producto "' + nombre + '" ya fue agregado');
+                    return;
+                }
+            }
+
+            // Ocultar mensaje de "No hay productos"
+            var mensajeSinProductos = document.getElementById('mensajeSinProductos');
+            if (mensajeSinProductos) {
+                mensajeSinProductos.style.display = 'none';
+            }
+
+            // Crear fila
             var row = document.createElement('tr');
             row.id = 'fila-' + productoId;
 
@@ -300,21 +341,23 @@
                         <td class="text-center">${cantidad}</td>
                         <td class="text-end">₡${precio.toFixed(2)}</td>
                         <td class="text-end">₡${subtotal.toFixed(2)}</td>
-                        <td class="text-end">₡${impuesto.toFixed(2)}</td>
+                        <td class="text-end">₡${descuentoLinea.toFixed(2)}</td>
+                        <td class="text-end">₡${impuestoLinea.toFixed(2)}</td>
                         <td class="text-end">₡${totalLinea.toFixed(2)}</td>
                         <td class="text-center">
-                            <form asp-action="RemoveProduct" method="post" style="display:inline;" onsubmit="return true;">
-                                <input type="hidden" name="productoId" value="${productoId}" />
-                                <button type="submit" class="btn btn-danger btn-sm">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
+                            <button type="button" class="btn btn-danger btn-sm btn-remove-product" data-id="${productoId}">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </td>
                     `;
 
             tbody.appendChild(row);
+            console.log('✅ Fila agregada correctamente');
 
-            //agregar campos ocultos al formulario
+            // ============================================================
+            // 📝 AGREGAR CAMPOS OCULTOS AL FORMULARIO
+            // ============================================================
+
             var index = document.querySelectorAll('input[name$=".ProductoId"]').length;
 
             var hiddenFields = [
@@ -324,12 +367,12 @@
                 { name: `Detalles[${index}].PrecioUnitario`, value: precio },
                 { name: `Detalles[${index}].Subtotal`, value: subtotal },
                 { name: `Detalles[${index}].PorcentajeImpuesto`, value: porcentajeImpuesto },
-                { name: `Detalles[${index}].MontoImpuesto`, value: impuesto },
-                { name: `Detalles[${index}].DescuentoAplicado`, value: 0 },
+                { name: `Detalles[${index}].MontoImpuesto`, value: impuestoLinea },
+                { name: `Detalles[${index}].DescuentoAplicado`, value: descuentoLinea },
                 { name: `Detalles[${index}].TotalLinea`, value: totalLinea }
             ];
 
-            hiddenFields.forEach(field => {
+            hiddenFields.forEach(function(field) {
                 var input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = field.name;
@@ -337,43 +380,74 @@
                 form.appendChild(input);
             });
 
-            //actualizar totales
+            // ============================================================
+            // 📊 ACTUALIZAR TOTALES
+            // ============================================================
+
             actualizarTotales();
 
-            //mostrar mensaje
+            // Mensaje de éxito
             mostrarMensaje(`Producto "${nombre}" agregado correctamente`, 'success');
-        }
 
-        //funcion para actualizar los totales de la factura
-        function actualizarTotales() {
-            var subtotal = 0;
-            var impuestoTotal = 0;
+            var alertWarning = document.querySelector('.alert-warning');
+            if (alertWarning) {
+                alertWarning.style.display = 'none';
+            }
 
-            //sumar subtotales e impuestos de la tabla
+            // ✅ CERRAR EL POPUP DE PRODUCTOS
+            var modal = bootstrap.Modal.getInstance(document.getElementById('productosModal'));
+            if (modal) {
+                modal.hide();
+                console.log('✅ Popup de productos cerrado');
+            }
+
+            console.log('🎉 PROCESO COMPLETADO EXITOSAMENTE');
+        };
+
+        // ============================================================
+        // FUNCIÓN PARA ACTUALIZAR TOTALES
+        // ============================================================
+
+        window.actualizarTotales = function() {
+            var subtotalGeneral = 0;
+            var descuentoGeneral = 0;
+            var impuestoGeneral = 0;
+            var totalGeneral = 0;
+
             var filas = document.querySelectorAll('#detalleBody tr');
             filas.forEach(function(fila) {
                 var celdas = fila.querySelectorAll('td');
-                if (celdas.length >= 6) {
+                if (celdas.length >= 8) {
                     var subtotalText = celdas[3].textContent.replace('₡', '').replace(',', '').trim();
-                    var impuestoText = celdas[4].textContent.replace('₡', '').replace(',', '').trim();
-                    subtotal += parseFloat(subtotalText) || 0;
-                    impuestoTotal += parseFloat(impuestoText) || 0;
+                    var descuentoText = celdas[4].textContent.replace('₡', '').replace(',', '').trim();
+                    var impuestoText = celdas[5].textContent.replace('₡', '').replace(',', '').trim();
+                    var totalText = celdas[6].textContent.replace('₡', '').replace(',', '').trim();
+
+                    subtotalGeneral += parseFloat(subtotalText) || 0;
+                    descuentoGeneral += parseFloat(descuentoText) || 0;
+                    impuestoGeneral += parseFloat(impuestoText) || 0;
+                    totalGeneral += parseFloat(totalText) || 0;
                 }
             });
 
-            //calcular descuento
-            var descuento = subtotal * 0.05;
-            var total = subtotal + impuestoTotal - descuento;
+            document.getElementById('lblSubtotal').textContent = '₡' + subtotalGeneral.toFixed(2);
+            document.getElementById('lblDescuento').textContent = '- ₡' + descuentoGeneral.toFixed(2);
+            document.getElementById('lblImpuesto').textContent = '₡' + impuestoGeneral.toFixed(2);
+            document.getElementById('lblTotal').textContent = '₡' + totalGeneral.toFixed(2);
 
-            //actualizar labels
-            document.getElementById('lblSubtotal').textContent = '₡' + subtotal.toFixed(2);
-            document.getElementById('lblDescuento').textContent = '- ₡' + descuento.toFixed(2);
-            document.getElementById('lblImpuesto').textContent = '₡' + impuestoTotal.toFixed(2);
-            document.getElementById('lblTotal').textContent = '₡' + total.toFixed(2);
-        }
+            console.log('📊 Totales actualizados:', {
+                subtotalGeneral: subtotalGeneral,
+                descuentoGeneral: descuentoGeneral,
+                impuestoGeneral: impuestoGeneral,
+                totalGeneral: totalGeneral
+            });
+        };
 
-        //funcion para mostrar mensajes
-        function mostrarMensaje(mensaje, tipo) {
+        // ============================================================
+        // FUNCIÓN PARA MOSTRAR MENSAJES
+        // ============================================================
+
+        window.mostrarMensaje = function(mensaje, tipo) {
             var alertDiv = document.createElement('div');
             alertDiv.className = 'alert alert-' + tipo + ' alert-dismissible fade show';
             alertDiv.role = 'alert';
@@ -388,14 +462,143 @@
             setTimeout(function() {
                 alertDiv.remove();
             }, 5000);
-        }
+        };
 
-        //funciones para popups (definidas globalmente para acceso desde popups)
-        window.abrirPopupClientes = abrirPopupClientes;
-        window.abrirPopupProductos = abrirPopupProductos;
-        window.agregarProductoDetalle = agregarProductoDetalle;
-        window.mostrarMensaje = mostrarMensaje;
-        window.actualizarTotales = actualizarTotales;
-        window.limpiarCliente = limpiarCliente;
+        // ============================================================
+        // FUNCIÓN PARA SELECCIONAR CLIENTE
+        // ============================================================
+
+        window.seleccionarCliente = function(id, nombre) {
+            console.log('✅ seleccionarCliente EJECUTADA');
+            console.log('📦 Cliente seleccionado:', { id: id, nombre: nombre });
+
+            document.getElementById('ClienteId').value = id;
+            document.getElementById('clienteSeleccionado').innerHTML = `<span class="badge bg-success"><i class="bi bi-person-check"></i> ${nombre}</span>`;
+            document.getElementById('clienteSeleccionado').style.display = 'block';
+            document.getElementById('seleccionarClienteBtn').style.display = 'none';
+
+            var modal = bootstrap.Modal.getInstance(document.getElementById('clientesModal'));
+            if (modal) modal.hide();
+
+            mostrarMensaje('Cliente seleccionado correctamente', 'success');
+        };
+
+        // ============================================================
+        // 🛡️ VALIDACIÓN ANTES DE GUARDAR (CON UN SOLO FORMULARIO)
+        // ============================================================
+
+        document.getElementById('btnGuardarFactura')?.addEventListener('click', function(e) {
+            console.log('🛡️ Validando antes de guardar...');
+
+            var clienteId = document.getElementById('ClienteId').value;
+            console.log('🔍 ClienteId al guardar:', clienteId);
+
+            // Verificar cliente
+            if (!clienteId || clienteId === '0' || clienteId === '') {
+                alert('⚠️ Debe seleccionar un cliente antes de guardar la factura');
+                return;
+            }
+
+            // Verificar que haya al menos un producto
+            var filas = document.querySelectorAll('#detalleBody tr');
+            if (filas.length === 0) {
+                alert('⚠️ Debe agregar al menos un producto antes de guardar la factura');
+                return;
+            }
+
+            console.log('✅ Factura válida para guardar. Enviando...');
+
+            // ✅ Enviar el formulario principal (que ya tiene todos los campos)
+            document.getElementById('facturaForm').submit();
+        });
+
+        // ============================================================
+        // INICIALIZACIÓN
+        // ============================================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.querySelectorAll('#detalleBody tr').length > 0) {
+                var alertWarning = document.querySelector('.alert-warning');
+                if (alertWarning) {
+                    alertWarning.style.display = 'none';
+                }
+            }
+        });
+
+        // ============================================================
+        // 🎯 EVENT LISTENER GLOBAL PARA BOTONES DE AGREGAR PRODUCTO
+        // ============================================================
+
+        document.addEventListener('click', function(e) {
+            var btn = e.target.closest('.btn-agregar-producto-popup');
+            if (btn) {
+                console.log('🎯 Click en botón de agregar producto');
+
+                var productoId = parseInt(btn.getAttribute('data-id'));
+                var nombre = btn.getAttribute('data-nombre');
+                var precio = parseFloat(btn.getAttribute('data-precio'));
+                var stock = parseInt(btn.getAttribute('data-stock'));
+                var porcentajeImpuesto = parseFloat(btn.getAttribute('data-porcentaje-impuesto') || 0);
+                var descuentoMaximo = parseFloat(btn.getAttribute('data-descuento-maximo') || 0);
+
+                var row = btn.closest('tr');
+                var cantidadInput = row ? row.querySelector('.cantidad-producto') : null;
+                var cantidad = cantidadInput ? parseInt(cantidadInput.value) : 1;
+
+                console.log('📦 Datos del producto a agregar:', {
+                    productoId: productoId,
+                    nombre: nombre,
+                    cantidad: cantidad,
+                    precio: precio,
+                    stock: stock,
+                    porcentajeImpuesto: porcentajeImpuesto,
+                    descuentoMaximo: descuentoMaximo
+                });
+
+                if (cantidad < 1) {
+                    alert('La cantidad debe ser mayor a 0');
+                    return;
+                }
+
+                if (cantidad > stock) {
+                    alert('Stock insuficiente. Disponible: ' + stock);
+                    return;
+                }
+
+                if (typeof window.agregarProductoDetalle === 'function') {
+                    window.agregarProductoDetalle(productoId, nombre, cantidad, precio, stock, porcentajeImpuesto, descuentoMaximo);
+                } else {
+                    console.error('❌ window.agregarProductoDetalle NO está definida');
+                    alert('Error: La función agregarProductoDetalle no está disponible');
+                }
+            }
+        });
+
+        console.log('✅ Event listener global para agregar productos registrado');
+
+        // ============================================================
+        // 🎯 EVENT LISTENER GLOBAL PARA BOTONES DE SELECCIONAR CLIENTE
+        // ============================================================
+
+        document.addEventListener('click', function(e) {
+            var btn = e.target.closest('.btn-seleccionar-cliente-popup');
+            if (btn) {
+                console.log('🎯 Click en botón de seleccionar cliente');
+
+                var id = parseInt(btn.getAttribute('data-id'));
+                var nombre = btn.getAttribute('data-nombre');
+
+                console.log('📦 Cliente seleccionado:', { id: id, nombre: nombre });
+
+                if (typeof window.seleccionarCliente === 'function') {
+                    window.seleccionarCliente(id, nombre);
+                } else {
+                    console.error('❌ window.seleccionarCliente NO está definida');
+                    alert('Error: La función seleccionarCliente no está disponible');
+                }
+            }
+        });
+
+        console.log('✅ Event listener global para seleccionar clientes registrado');
     </script>
 }

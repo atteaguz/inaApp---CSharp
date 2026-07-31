@@ -8,11 +8,11 @@
 <div class="modal-body">
     <div class="mb-3">
         <div class="input-group">
-            <input type="text" id="buscarClienteInput" class="form-control" placeholder="Buscar por nombre o cedula..." value="@ViewBag.Termino" />
-            <button class="btn btn-primary" onclick="buscarClientes()">
+            <input type="text" id="buscarClienteInput" class="form-control" placeholder="Buscar por nombre o cédula..." value="@ViewBag.Termino" />
+            <button class="btn btn-primary" id="btnBuscarCliente">
                 <i class="bi bi-search"></i> Buscar
             </button>
-            <button class="btn btn-secondary" onclick="limpiarBusquedaClientes()">
+            <button class="btn btn-secondary" id="btnLimpiarCliente">
                 <i class="bi bi-arrow-counterclockwise"></i> Limpiar
             </button>
         </div>
@@ -42,7 +42,10 @@
                             <td>@cliente.Telefono</td>
                             <td>@cliente.CorreoElectronico</td>
                             <td class="text-center">
-                                <button type="button" class="btn btn-success btn-sm" onclick="seleccionarCliente(@cliente.IdCliente, '@cliente.Nombre @cliente.PrimerApellido @cliente.SegundoApellido')">
+                                <!-- USAR UNA CLASE EN VEZ DE onclick -->
+                                <button type="button" class="btn btn-success btn-sm btn-seleccionar-cliente-popup" 
+                                        data-id="@cliente.IdCliente" 
+                                        data-nombre="@cliente.Nombre @cliente.PrimerApellido @cliente.SegundoApellido">
                                     <i class="bi bi-check-circle"></i> Seleccionar
                                 </button>
                             </td>
@@ -59,7 +62,6 @@
         </table>
     </div>
 
-    <!-- paginacion -->
     @if (ViewBag.TotalPages > 1)
     {
         <nav>
@@ -67,7 +69,7 @@
                 @for (int i = 1; i <= ViewBag.TotalPages; i++)
                 {
                     <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                        <a class="page-link" href="#" onclick="cargarPaginaClientes(@i)">@i</a>
+                        <a class="page-link page-link-cliente" href="#" data-page="@i">@i</a>
                     </li>
                 }
             </ul>
@@ -76,46 +78,52 @@
 </div>
 
 <script>
-    let terminoCliente = '@ViewBag.Termino';
-    let paginaActualCliente = @ViewBag.CurrentPage;
+    console.log('Script de _ClientesPopup.cshtml cargado');
 
-    function seleccionarCliente(id, nombre) {
-        //actualizar el campo oculto y el label en el formulario principal
-        window.opener.document.getElementById('ClienteId').value = id;
-        window.opener.document.getElementById('clienteSeleccionado').innerHTML = `<span class="badge bg-success"><i class="bi bi-person-check"></i> ${nombre}</span>`;
-        window.opener.document.getElementById('clienteSeleccionado').style.display = 'block';
-        window.opener.document.getElementById('seleccionarClienteBtn').style.display = 'none';
-
-        //cerrar el modal
-        var modal = bootstrap.Modal.getInstance(document.getElementById('clientesModal'));
-        modal.hide();
-
-        //mensaje de exito
-        window.opener.mostrarMensaje('Cliente seleccionado correctamente', 'success');
-    }
-
-    function buscarClientes() {
+    // Buscar clientes
+    document.getElementById('btnBuscarCliente')?.addEventListener('click', function() {
         var termino = document.getElementById('buscarClienteInput').value;
-        cargarPaginaClientes(1, termino);
-    }
+        console.log('Buscando clientes:', { termino: termino });
+        cargarPaginaClientesPopup(1, termino);
+    });
 
-    function limpiarBusquedaClientes() {
+    // Limpiar búsqueda
+    document.getElementById('btnLimpiarCliente')?.addEventListener('click', function() {
         document.getElementById('buscarClienteInput').value = '';
-        cargarPaginaClientes(1, '');
-    }
+        console.log('Limpiando búsqueda de clientes');
+        cargarPaginaClientesPopup(1, '');
+    });
 
-    function cargarPaginaClientes(page, termino) {
-        if (!termino) {
-            termino = document.getElementById('buscarClienteInput').value || '';
+    // Enter en input
+    document.getElementById('buscarClienteInput')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            var termino = document.getElementById('buscarClienteInput').value;
+            console.log('Enter en búsqueda de clientes:', { termino: termino });
+            cargarPaginaClientesPopup(1, termino);
         }
+    });
 
+    // Paginación
+    document.querySelectorAll('.page-link-cliente').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.preventDefault();
+            var page = this.getAttribute('data-page');
+            var termino = document.getElementById('buscarClienteInput').value || '';
+            console.log('Paginación clientes:', { page: page, termino: termino });
+            cargarPaginaClientesPopup(page, termino);
+        });
+    });
+
+    function cargarPaginaClientesPopup(page, termino) {
+        console.log('Cargando página de clientes:', { page: page, termino: termino });
         fetch(`@Url.Action("BuscarClientes", "Factura")?termino=${encodeURIComponent(termino)}&page=${page}`)
             .then(response => response.text())
             .then(html => {
                 document.getElementById('clientesPopupContent').innerHTML = html;
+                console.log('Popup de clientes actualizado');
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Error al cargar clientes:', error);
             });
     }
 </script>

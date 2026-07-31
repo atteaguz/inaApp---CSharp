@@ -18,8 +18,8 @@ namespace inaApp.DTOs.Producto
         public string Nombre { get; set; }
 
         [Required(ErrorMessage = "El precio es obligatorio")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "El precio debe ser mayor a cero")]
-        public decimal Precio { get; set; }
+        [Range(0.01, 100000000.00, ErrorMessage = "El precio del producto debe estar entre 1 y 100 millones")]
+        public decimal Precio { get; set; } = 1;
 
         [StringLength(500, ErrorMessage = "La descripción no puede exceder los 500 caracteres")]
         public string? Descripcion { get; set; }

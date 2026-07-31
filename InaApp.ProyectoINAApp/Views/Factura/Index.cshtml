@@ -38,7 +38,8 @@
                     <th>Cliente</th>
                     <th>Productos</th>
                     <th class="text-end">Subtotal</th>
-                    <th class="text-end">Descuento (5%)</th>
+                    <th class="text-end">Descuento</th>
+                    <th class="text-end">Impuesto</th>
                     <th class="text-end">Total</th>
                     <th>Estado</th>
                     <th class="text-center">Acciones</th>
@@ -56,6 +57,7 @@
                             <td class="text-center">@factura.CantidadProductos</td>
                             <td class="text-end">₡@factura.Subtotal.ToString("N2")</td>
                             <td class="text-end">₡@factura.Descuento.ToString("N2")</td>
+                            <td class="text-end">₡@factura.ImpuestoTotal.ToString("N2")</td>
                             <td class="text-end fw-bold">₡@factura.Total.ToString("N2")</td>
                             <td>
                                 <span class="badge bg-@factura.EstadoBadge">@factura.EstadoTexto</span>
@@ -66,9 +68,12 @@
                                 </a>
                                 @if (factura.Estado)
                                 {
-                                    <a asp-action="Anular" asp-route-id="@factura.Id" class="btn btn-danger btn-sm">
-                                        <i class="bi bi-x-circle"></i> Anular
-                                    </a>
+                                    @if (factura.Estado)
+                                    {
+                                        <a asp-controller="NotaCredito" asp-action="Create" asp-route-facturaId="@factura.Id" class="btn btn-danger btn-sm">
+                                            <i class="bi bi-x-circle"></i> Anular
+                                        </a>
+                                    }
                                 }
                             </td>
                         </tr>

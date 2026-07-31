@@ -16,7 +16,7 @@ namespace inaApp.Services
     public class ProductoService : IGenericService
     <ProductoResponseDTO, ProductoCreateDTO, ProductoUpdateDTO>
     {
-        //inyeccion de ProductoRepository EN ProductoService
+        //inyeccion de ProductoRepository en ProductoService
         private readonly IGenericRepository<Producto> _productoRepo;
         private readonly IGenericRepository<Categoria> _categoriaRepo;
         private readonly IMapper _mapper;
@@ -43,12 +43,6 @@ namespace inaApp.Services
             {
                 throw new InvalidStockException("El stock no puede ser negativo o cero.");
             }
-
-            //no nombres repetidos - DuplicatedNameException - BadRequest
-            //if (await _productoRepo.ObtenerPorNombreAsync(entity.Nombre) != null && entity.Id != entity.Id)
-            //{
-            //    throw new DuplicatedNameException($"El nombre de producto: {entity.Nombre} , ya existe.");
-            //}
 
             //no nombre repetidos, se excluye a si mismo al actualizar si nombre no cambia - DuplicatedNameException - BadRequest
             var productoExistente = await _productoRepo.ObtenerPorIdsAsync(entity.Id);
@@ -158,7 +152,11 @@ namespace inaApp.Services
             }
 
             //convertir de DTO a Entidad
-            Producto producto = _mapper.Map<Producto>(entity);
+            var producto = _mapper.Map<Producto>(entity);
+
+            // Depuracion: Verificar el precio
+            Console.WriteLine($"Precio recibido: {entity.Precio}");
+            Console.WriteLine($"Precio mapeado: {producto.Precio}");
 
             producto = await _productoRepo.CrearAsync(producto);
 

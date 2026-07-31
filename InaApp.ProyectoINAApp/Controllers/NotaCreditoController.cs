@@ -4,6 +4,7 @@ using inaApp.DTOs.Factura;
 using inaApp.Services;
 using InaApp.ProyectoINAApp.Models.Factura;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -93,15 +94,15 @@ namespace InaApp.ProyectoINAApp.Controllers
                 if (!response.Success)
                 {
                     TempData["Error"] = response.Message;
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction("Index", "Factura");
                 }
 
                 var factura = response.Data;
 
                 if (!factura.Estado)
                 {
-                    TempData["Error"] = $"La factura #{facturaId} ya esta anulada";
-                    return RedirectToAction(nameof(Index));
+                    TempData["Error"] = $"La factura #{facturaId} ya está anulada";
+                    return RedirectToAction("Index", "Factura");
                 }
 
                 var viewModel = new NotaCreditoCreateViewModel
@@ -112,7 +113,7 @@ namespace InaApp.ProyectoINAApp.Controllers
                     ClienteCedula = factura.ClienteCedula
                 };
 
-                //cargar los detalles de la factura para seleccionar
+                // Cargar los detalles de la factura para seleccionar
                 foreach (var detalle in factura.Detalles)
                 {
                     viewModel.Detalles.Add(new NotaCreditoDetalleCreateViewModel
@@ -121,18 +122,20 @@ namespace InaApp.ProyectoINAApp.Controllers
                         ProductoId = detalle.ProductoId,
                         ProductoNombre = detalle.ProductoNombre,
                         CantidadOriginal = detalle.Cantidad,
-                        CantidadAcreditar = detalle.Cantidad, //por defecto se acredita todo
+                        CantidadAcreditar = detalle.Cantidad,
                         PrecioUnitario = detalle.PrecioUnitario,
                         Subtotal = detalle.Subtotal,
                         PorcentajeImpuesto = detalle.PorcentajeImpuesto,
                         MontoImpuesto = detalle.MontoImpuesto,
                         DescuentoAplicado = detalle.DescuentoAplicado,
                         TotalLinea = detalle.TotalLinea,
-                        Seleccionado = true //por defecto seleccionado
+                        Seleccionado = true
                     });
                 }
 
+                // Calcular totales iniciales
                 CalcularTotalesNota(viewModel);
+
                 return View(viewModel);
             }
             catch (NotFoundException ex)
@@ -142,34 +145,50 @@ namespace InaApp.ProyectoINAApp.Controllers
             }
             catch (Exception)
             {
-                TempData["Error"] = "Error al cargar la factura para la nota de credito.";
+                TempData["Error"] = "Error al cargar la factura para la nota de crédito.";
                 return RedirectToAction("Index", "Factura");
             }
         }
 
-        // POST: NotaCreditoController/Create
+        // NotaCreditoController.cs - POST Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(NotaCreditoCreateViewModel viewModel)
         {
             try
             {
-                //validar el motivo
+                // Para depurar
+                Console.WriteLine($"FacturaOriginalId: {viewModel.FacturaOriginalId}");
+                Console.WriteLine($"Motivo: {viewModel.Motivo}");
+                Console.WriteLine($"Detalles Count: {viewModel.Detalles?.Count ?? 0}");
+
+                // Si no hay detalles, cargarlos desde la factura
+                if (viewModel.Detalles == null || !viewModel.Detalles.Any())
+                {
+                    await CargarDatosFactura(viewModel);
+                }
+
+                // Validar motivo
                 if (string.IsNullOrWhiteSpace(viewModel.Motivo))
                 {
                     viewModel.Error = "El motivo es obligatorio";
+                    await CargarDatosFactura(viewModel);
                     return View(viewModel);
                 }
 
-                //calidar que haya al menos un producto seleccionado
-                var detallesSeleccionados = viewModel.Detalles.Where(d => d.Seleccionado && d.CantidadAcreditar > 0).ToList();
+                // Obtener solo los detalles seleccionados
+                var detallesSeleccionados = viewModel.Detalles
+                    .Where(d => d.Seleccionado && d.CantidadAcreditar > 0)
+                    .ToList();
+
                 if (!detallesSeleccionados.Any())
                 {
                     viewModel.Error = "Debe seleccionar al menos un producto para acreditar";
+                    await CargarDatosFactura(viewModel);
                     return View(viewModel);
                 }
 
-                //crear DTO
+                // Crear DTO
                 var dto = new NotaCreditoCreateDTO
                 {
                     FacturaOriginalId = viewModel.FacturaOriginalId,
@@ -191,25 +210,34 @@ namespace InaApp.ProyectoINAApp.Controllers
                 if (!response.Success)
                 {
                     viewModel.Error = response.Message;
+                    await CargarDatosFactura(viewModel);
                     return View(viewModel);
                 }
 
                 TempData["Mensaje"] = response.Message;
-                return RedirectToAction(nameof(Details), new { id = response.Data.Id });
+                return RedirectToAction("Details", "NotaCredito", new { id = response.Data.Id });
             }
-            catch (NotFoundException ex)
+            catch (DbUpdateException ex)
             {
-                viewModel.Error = ex.Message;
-                return View(viewModel);
-            }
-            catch (FacturaSinDetalleException ex)
-            {
-                viewModel.Error = ex.Message;
+                var innerEx = ex.InnerException;
+                var errorMessage = "Error al guardar la nota de crédito: ";
+                while (innerEx != null)
+                {
+                    if (innerEx.Message.Contains("out of range"))
+                    {
+                        errorMessage = "Error: El descuento o impuesto excede el límite permitido. Verifique los valores.";
+                        break;
+                    }
+                    innerEx = innerEx.InnerException;
+                }
+                viewModel.Error = errorMessage;
+                await CargarDatosFactura(viewModel);
                 return View(viewModel);
             }
             catch (Exception ex)
             {
-                viewModel.Error = $"Error al crear la nota de credito: {ex.Message}";
+                viewModel.Error = $"Error al crear la nota de crédito: {ex.Message}";
+                await CargarDatosFactura(viewModel);
                 return View(viewModel);
             }
         }
@@ -257,6 +285,57 @@ namespace InaApp.ProyectoINAApp.Controllers
             viewModel.Descuento = Math.Round(descuento, 2);
             viewModel.ImpuestoTotal = Math.Round(impuesto, 2);
             viewModel.Total = Math.Round(subtotal - descuento + impuesto, 2);
+        }
+
+        //Método auxiliar para cargar datos de la factura original
+        private async Task CargarDatosFactura(NotaCreditoCreateViewModel viewModel)
+        {
+            try
+            {
+                var response = await _facturaService.ObtenerPorIdsAsync(viewModel.FacturaOriginalId);
+                if (response.Success)
+                {
+                    var factura = response.Data;
+                    viewModel.FacturaOriginalNumero = factura.Id.ToString();
+                    viewModel.ClienteNombre = factura.ClienteNombre;
+                    viewModel.ClienteCedula = factura.ClienteCedula;
+
+                    // Si no hay detalles en el viewModel, cargarlos desde la factura
+                    // Si ya hay detalles, conservarlos (el usuario ya seleccionó algo)
+                    if (viewModel.Detalles == null || !viewModel.Detalles.Any())
+                    {
+                        viewModel.Detalles = new List<NotaCreditoDetalleCreateViewModel>();
+                        foreach (var detalle in factura.Detalles)
+                        {
+                            viewModel.Detalles.Add(new NotaCreditoDetalleCreateViewModel
+                            {
+                                FacturaDetalleOriginalId = detalle.Id,
+                                ProductoId = detalle.ProductoId,
+                                ProductoNombre = detalle.ProductoNombre,
+                                CantidadOriginal = detalle.Cantidad,
+                                CantidadAcreditar = detalle.Cantidad,
+                                PrecioUnitario = detalle.PrecioUnitario,
+                                Subtotal = detalle.Subtotal,
+                                PorcentajeImpuesto = detalle.PorcentajeImpuesto,
+                                MontoImpuesto = detalle.MontoImpuesto,
+                                DescuentoAplicado = detalle.DescuentoAplicado,
+                                TotalLinea = detalle.TotalLinea,
+                                Seleccionado = true
+                            });
+                        }
+                    }
+                    else
+                    {
+                        // Si ya hay detalles, solo actualizar la información del cliente
+                        // (los detalles ya están en el viewModel desde el POST)
+                        Console.WriteLine($"Detalles preservados: {viewModel.Detalles.Count} productos");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al cargar datos de factura: {ex.Message}");
+            }
         }
     }
 }

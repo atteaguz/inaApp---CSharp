@@ -85,7 +85,7 @@ namespace inaApp.Services
 
             try
             {
-                //validar que la factura original exista y este activa
+                // 1. Validar que la factura original exista y esté activa
                 var facturaOriginal = await _facturaRepo.ObtenerPorIdsAsync(dto.FacturaOriginalId);
                 if (facturaOriginal == null)
                     throw new NotFoundException($"Factura original con ID {dto.FacturaOriginalId} no encontrada");
@@ -93,45 +93,49 @@ namespace inaApp.Services
                 if (!facturaOriginal.Estado)
                     throw new InvalidOperationException($"La factura #{dto.FacturaOriginalId} ya está anulada");
 
-                //validar que el cliente este activo
+                // 2. Validar que el cliente esté activo
                 var cliente = await _clienteRepo.ObtenerPorIdsAsync(facturaOriginal.ClienteId);
                 if (cliente == null || !cliente.Estado)
                     throw new ClienteInactivoException("El cliente de la factura original no está activo");
 
-                //validar que haya al menos un detalle
+                // 3. Validar que haya al menos un detalle
                 if (dto.Detalles == null || !dto.Detalles.Any())
                     throw new FacturaSinDetalleException("La nota de crédito debe contener al menos un producto");
 
-                //validar cada detalle
+                // 4. Procesar cada detalle
                 decimal subtotal = 0;
                 decimal descuentoTotal = 0;
                 decimal impuestoTotal = 0;
                 var detallesNota = new List<NotaCreditoDetalle>();
 
+                Console.WriteLine("========== NOTA DE CRÉDITO - DETALLES RECIBIDOS ==========");
+                Console.WriteLine($"FacturaOriginalId: {dto.FacturaOriginalId}");
+                Console.WriteLine($"Motivo: {dto.Motivo}");
+                Console.WriteLine($"Cantidad de detalles: {dto.Detalles.Count}");
+
                 foreach (var detalleDto in dto.Detalles)
                 {
-                    //obtener el detalle original de la factura
+                    // Buscar el detalle original de la factura
                     var detalleOriginal = facturaOriginal.FacturaDetalles
                         .FirstOrDefault(d => d.Id == detalleDto.FacturaDetalleOriginalId);
 
                     if (detalleOriginal == null)
                         throw new NotFoundException($"Detalle de factura con ID {detalleDto.FacturaDetalleOriginalId} no encontrado");
 
-                    //validar que la cantidad no exceda la cantidad original
+                    // Validar que la cantidad no exceda la cantidad original
                     if (detalleDto.Cantidad > detalleOriginal.Cantidad)
                         throw new InvalidOperationException(
                             $"La cantidad a acreditar ({detalleDto.Cantidad}) excede la cantidad facturada ({detalleOriginal.Cantidad})");
 
-                    //validar que la cantidad sea mayor a 0
                     if (detalleDto.Cantidad <= 0)
                         throw new InvalidOperationException("La cantidad debe ser mayor a 0");
 
-                    //obtener el producto
+                    // Obtener el producto
                     var producto = await _productoRepo.ObtenerPorIdsAsync(detalleOriginal.ProductoId);
                     if (producto == null)
                         throw new NotFoundException($"Producto con ID {detalleOriginal.ProductoId} no encontrado");
 
-                    //copia de los datos del detalle original
+                    // Copiar datos del detalle original
                     detalleDto.ProductoId = detalleOriginal.ProductoId;
                     detalleDto.PrecioUnitario = detalleOriginal.PrecioUnitario;
                     detalleDto.Subtotal = detalleDto.Cantidad * detalleDto.PrecioUnitario;
@@ -142,12 +146,21 @@ namespace inaApp.Services
                     detalleDto.ProductoNombre = producto.Nombre;
                     detalleDto.CantidadOriginal = detalleOriginal.Cantidad;
 
-                    //sumar los totales
+                    Console.WriteLine($"  Producto: {detalleDto.ProductoNombre}");
+                    Console.WriteLine($"    Cantidad Original: {detalleDto.CantidadOriginal}, Cantidad Acreditar: {detalleDto.Cantidad}");
+                    Console.WriteLine($"    PrecioUnitario: {detalleDto.PrecioUnitario}");
+                    Console.WriteLine($"    Subtotal: {detalleDto.Subtotal}");
+                    Console.WriteLine($"    PorcentajeImpuesto: {detalleDto.PorcentajeImpuesto}");
+                    Console.WriteLine($"    MontoImpuesto: {detalleDto.MontoImpuesto}");
+                    Console.WriteLine($"    DescuentoAplicado: {detalleDto.DescuentoAplicado}");
+                    Console.WriteLine($"    TotalLinea: {detalleDto.TotalLinea}");
+
+                    // Sumar a totales
                     subtotal += detalleDto.Subtotal;
                     descuentoTotal += detalleDto.DescuentoAplicado;
                     impuestoTotal += detalleDto.MontoImpuesto;
 
-                    //crear detalle de nota de credito
+                    // Crear detalle de nota de crédito
                     var detalle = new NotaCreditoDetalle
                     {
                         FacturaDetalleOriginalId = detalleDto.FacturaDetalleOriginalId,
@@ -164,10 +177,17 @@ namespace inaApp.Services
                     detallesNota.Add(detalle);
                 }
 
-                //calcular totales de la nota de credito
+                // 5. Calcular totales de la nota de crédito
                 decimal total = subtotal - descuentoTotal + impuestoTotal;
 
-                //crear la nota de credito
+                Console.WriteLine("========== TOTALES DE LA NOTA DE CRÉDITO ==========");
+                Console.WriteLine($"Subtotal: {subtotal}");
+                Console.WriteLine($"DescuentoTotal: {descuentoTotal}");
+                Console.WriteLine($"ImpuestoTotal: {impuestoTotal}");
+                Console.WriteLine($"Total: {total}");
+                Console.WriteLine("====================================================");
+
+                // 6. Crear la nota de crédito
                 var notaCredito = new NotaCredito
                 {
                     FacturaOriginalId = dto.FacturaOriginalId,
@@ -185,26 +205,39 @@ namespace inaApp.Services
                 await _context.NotaCredito.AddAsync(notaCredito);
                 await _context.SaveChangesAsync();
 
-                //verificar si se anulo completamente la factura
-                //verificar si todos los productos de la factura han sido acreditados
+                // 7. Verificar si se anuló completamente la factura
                 var detallesFactura = facturaOriginal.FacturaDetalles.ToList();
                 bool todosAcreditados = true;
 
                 foreach (var detalleFactura in detallesFactura)
                 {
-                    //calcular cuánto se ha acreditado de este detalle en esta nota
+                    // Calcular cuánto se ha acreditado de este detalle en esta nota
                     var acreditadoEnEstaNota = detallesNota
                         .Where(d => d.FacturaDetalleOriginalId == detalleFactura.Id)
                         .Sum(d => d.Cantidad);
 
-                    if (acreditadoEnEstaNota < detalleFactura.Cantidad)
+                    // Buscar si hay notas de crédito anteriores que ya acreditaron parte
+                    var notasAnteriores = await _notaCreditoRepo.ObtenerPorFacturaAsync(facturaOriginal.Id);
+                    var acreditadoAnterior = 0;
+                    foreach (var notaAnterior in notasAnteriores)
+                    {
+                        if (notaAnterior.Id != notaCredito.Id)
+                        {
+                            acreditadoAnterior += notaAnterior.NotaCreditoDetalles
+                                .Where(d => d.FacturaDetalleOriginalId == detalleFactura.Id)
+                                .Sum(d => d.Cantidad);
+                        }
+                    }
+
+                    var totalAcreditado = acreditadoAnterior + acreditadoEnEstaNota;
+                    if (totalAcreditado < detalleFactura.Cantidad)
                     {
                         todosAcreditados = false;
                         break;
                     }
                 }
 
-                //si todos los productos fueron acreditados se anula la factura original completa
+                // Si todos los productos fueron acreditados, anular la factura completa
                 if (todosAcreditados)
                 {
                     facturaOriginal.Estado = false;
@@ -214,14 +247,14 @@ namespace inaApp.Services
 
                 await transaction.CommitAsync();
 
-                //cargar la nota de crédito creada para el response
+                // Cargar la nota de crédito creada para el response
                 var notaCreada = await _notaCreditoRepo.ObtenerPorIdsAsync(notaCredito.Id);
                 var responseDTO = _mapper.Map<NotaCreditoResponseDTO>(notaCreada);
 
                 return new Response<NotaCreditoResponseDTO>
                 {
                     Data = responseDTO,
-                    Message = $"Nota de credito #{notaCredito.Id} creada exitosamente. Total acreditable: ₡{total:N2}",
+                    Message = $"Nota de crédito #{notaCredito.Id} creada exitosamente. Total acreditable: ₡{total:N2}",
                     Success = true
                 };
             }

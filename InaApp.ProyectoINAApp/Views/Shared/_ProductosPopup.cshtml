@@ -10,16 +10,16 @@
         <div class="col-md-6">
             <div class="input-group">
                 <input type="text" id="buscarProductoInput" class="form-control" placeholder="Buscar por nombre o ID..." value="@ViewBag.Termino" />
-                <button class="btn btn-primary" onclick="buscarProductos()">
+                <button class="btn btn-primary" id="btnBuscarProducto">
                     <i class="bi bi-search"></i> Buscar
                 </button>
-                <button class="btn btn-secondary" onclick="limpiarBusquedaProductos()">
+                <button class="btn btn-secondary" id="btnLimpiarProducto">
                     <i class="bi bi-arrow-counterclockwise"></i> Limpiar
                 </button>
             </div>
         </div>
         <div class="col-md-4">
-            <select id="filtroCategoria" class="form-select" onchange="buscarProductos()">
+            <select id="filtroCategoria" class="form-select">
                 <option value="0">Todas las categorías</option>
                 @if (ViewBag.CategoriasList != null)
                 {
@@ -64,10 +64,18 @@
                             <td>@producto.TipoImpuestoNombre (@producto.PorcentajeImpuesto%)</td>
                             <td class="text-center">@producto.DescuentoMaximo%</td>
                             <td class="text-center">
-                                <input type="number" id="cantidad-@producto.Id" class="form-control form-control-sm text-center" value="1" min="1" max="@producto.Stock" style="width:80px;display:inline-block;" />
+                                <input type="number" class="form-control form-control-sm text-center cantidad-producto"
+                                       data-id="@producto.Id" value="1" min="1" max="@producto.Stock" style="width:80px;display:inline-block;" />
                             </td>
                             <td class="text-center">
-                                <button type="button" class="btn btn-success btn-sm" onclick="seleccionarProducto(@producto.Id, '@producto.Nombre', @producto.Precio.ToString(System.Globalization.CultureInfo.InvariantCulture), @producto.Stock, '@producto.TipoImpuesto', @producto.PorcentajeImpuesto.ToString(System.Globalization.CultureInfo.InvariantCulture), @producto.DescuentoMaximo.ToString(System.Globalization.CultureInfo.InvariantCulture))">
+                                <!-- USAR UNA CLASE EN VEZ DE onclick -->
+                                <button type="button" class="btn btn-success btn-sm btn-agregar-producto-popup"
+                                        data-id="@producto.Id"
+                                        data-nombre="@producto.Nombre"
+                                        data-precio="@producto.Precio.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                        data-stock="@producto.Stock"
+                                        data-porcentaje-impuesto="@producto.PorcentajeImpuesto"
+                                        data-descuento-maximo="@producto.DescuentoMaximo">
                                     <i class="bi bi-plus-circle"></i> Agregar
                                 </button>
                             </td>
@@ -84,7 +92,6 @@
         </table>
     </div>
 
-    <!-- paginacion -->
     @if (ViewBag.TotalPages > 1)
     {
         <nav>
@@ -92,7 +99,7 @@
                 @for (int i = 1; i <= ViewBag.TotalPages; i++)
                 {
                     <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                        <a class="page-link" href="#" onclick="cargarPaginaProductos(@i)">@i</a>
+                        <a class="page-link page-link-producto" href="#" data-page="@i">@i</a>
                     </li>
                 }
             </ul>
@@ -101,69 +108,65 @@
 </div>
 
 <script>
-    let terminoProducto = '@ViewBag.Termino';
-    let paginaActualProducto = @ViewBag.CurrentPage;
-    let categoriaIdProducto = @ViewBag.CategoriaId;
+    console.log('Script de _ProductosPopup.cshtml cargado');
 
-    function seleccionarProducto(id, nombre, precio, stock, tipoImpuesto, porcentajeImpuesto, descuentoMaximo) {
-        var cantidad = document.getElementById('cantidad-' + id).value;
-
-        if (cantidad < 1) {
-            alert('La cantidad debe ser mayor a 0');
-            return;
-        }
-
-        if (cantidad > stock) {
-            alert('Stock insuficiente. Disponible: ' + stock);
-            return;
-        }
-
-        //verificar si el producto ya esta en la lista
-        var detalles = window.opener.document.getElementById('Detalles');
-        var productosExistentes = window.opener.document.querySelectorAll('input[name$=".ProductoId"]');
-
-        for (var i = 0; i < productosExistentes.length; i++) {
-            if (parseInt(productosExistentes[i].value) === id) {
-                alert('El producto "' + nombre + '" ya fue agregado');
-                return;
-            }
-        }
-
-        //agregar el producto al detalle en el formulario principal
-        window.opener.agregarProductoDetalle(id, nombre, parseInt(cantidad), precio, stock, tipoImpuesto, parseFloat(porcentajeImpuesto), parseFloat(descuentoMaximo));
-
-        //cerrar el modal
-        var modal = bootstrap.Modal.getInstance(document.getElementById('productosModal'));
-        modal.hide();
-    }
-
-    function buscarProductos() {
+    // FUNCIONES PARA POPUP DE PRODUCTOS
+    // Buscar productos - evento click
+    document.getElementById('btnBuscarProducto')?.addEventListener('click', function() {
         var termino = document.getElementById('buscarProductoInput').value;
         var categoria = document.getElementById('filtroCategoria').value;
-        cargarPaginaProductos(1, termino, categoria);
-    }
+        console.log('Buscando productos:', { termino: termino, categoria: categoria });
+        cargarPaginaProductosPopup(1, termino, categoria);
+    });
 
-    function limpiarBusquedaProductos() {
+    // Limpiar búsqueda
+    document.getElementById('btnLimpiarProducto')?.addEventListener('click', function() {
         document.getElementById('buscarProductoInput').value = '';
         document.getElementById('filtroCategoria').value = '0';
-        cargarPaginaProductos(1, '', '0');
-    }
+        console.log('Limpiando búsqueda de productos');
+        cargarPaginaProductosPopup(1, '', '0');
+    });
 
-    function cargarPaginaProductos(page, termino, categoria) {
-        if (!termino) {
-            termino = document.getElementById('buscarProductoInput').value || '';
+    // Enter en input
+    document.getElementById('buscarProductoInput')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            var termino = document.getElementById('buscarProductoInput').value;
+            var categoria = document.getElementById('filtroCategoria').value;
+            console.log('Enter en búsqueda de productos:', { termino: termino, categoria: categoria });
+            cargarPaginaProductosPopup(1, termino, categoria);
         }
-        if (!categoria) {
-            categoria = document.getElementById('filtroCategoria').value || '0';
-        }
+    });
 
+    // Cambio en filtro de categoría
+    document.getElementById('filtroCategoria')?.addEventListener('change', function() {
+        var termino = document.getElementById('buscarProductoInput').value || '';
+        var categoria = this.value || '0';
+        console.log('Cambio de categoría:', { termino: termino, categoria: categoria });
+        cargarPaginaProductosPopup(1, termino, categoria);
+    });
+
+    // Paginación
+    document.querySelectorAll('.page-link-producto').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.preventDefault();
+            var page = this.getAttribute('data-page');
+            var termino = document.getElementById('buscarProductoInput').value || '';
+            var categoria = document.getElementById('filtroCategoria').value || '0';
+            console.log('Paginación productos:', { page: page, termino: termino, categoria: categoria });
+            cargarPaginaProductosPopup(page, termino, categoria);
+        });
+    });
+
+    function cargarPaginaProductosPopup(page, termino, categoria) {
+        console.log('Cargando página de productos:', { page: page, termino: termino, categoria: categoria });
         fetch(`@Url.Action("BuscarProductos", "Factura")?termino=${encodeURIComponent(termino)}&categoriaId=${categoria}&page=${page}`)
             .then(response => response.text())
             .then(html => {
                 document.getElementById('productosPopupContent').innerHTML = html;
+                console.log('Popup de productos actualizado');
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Error al cargar productos:', error);
             });
     }
 </script>

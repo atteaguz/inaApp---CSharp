@@ -351,7 +351,6 @@ namespace InaApp.ProyectoINAApp.Controllers
                 var response = await _clienteService.ObtenerTodosAsync();
                 var clientes = response.Data ?? new List<ClienteResponseDTO>();
 
-                //filtro
                 if (!string.IsNullOrWhiteSpace(termino))
                 {
                     clientes = clientes.Where(c =>
@@ -360,7 +359,6 @@ namespace InaApp.ProyectoINAApp.Controllers
                     ).ToList();
                 }
 
-                //paginacion
                 var total = clientes.Count;
                 var items = clientes.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
@@ -385,10 +383,8 @@ namespace InaApp.ProyectoINAApp.Controllers
                 var response = await _productoService.ObtenerTodosAsync();
                 var productos = response.Data ?? new List<ProductoResponseDTO>();
 
-                //filtrar solo activos y con stock > 0
                 productos = productos.Where(p => p.Estado && p.Stock > 0).ToList();
 
-                //filtrar por termino
                 if (!string.IsNullOrWhiteSpace(termino))
                 {
                     productos = productos.Where(p =>
@@ -397,13 +393,11 @@ namespace InaApp.ProyectoINAApp.Controllers
                     ).ToList();
                 }
 
-                //filtrar por categoria
                 if (categoriaId > 0)
                 {
                     productos = productos.Where(p => p.CategoriaId == categoriaId).ToList();
                 }
 
-                //paginacion
                 var total = productos.Count;
                 var items = productos.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
@@ -412,7 +406,6 @@ namespace InaApp.ProyectoINAApp.Controllers
                 ViewBag.Termino = termino;
                 ViewBag.CategoriaId = categoriaId;
 
-                //cargar categorias para el filtro
                 var categoriasResponse = await _categoriaService.ObtenerTodosAsync();
                 ViewBag.CategoriasList = categoriasResponse.Data?.Select(c => new SelectListItem
                 {

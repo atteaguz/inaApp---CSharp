@@ -33,6 +33,9 @@ namespace inaApp.Repository
                 producto.Descripcion = entity.Descripcion;
                 producto.Stock = entity.Stock;
                 producto.CategoriaId = entity.CategoriaId;
+                producto.TipoImpuesto = entity.TipoImpuesto;
+                producto.PorcentajeImpuesto = entity.PorcentajeImpuesto;
+                producto.DescuentoMaximo = entity.DescuentoMaximo;
 
                 _context.Producto.Update(producto);
                 await _context.SaveChangesAsync();

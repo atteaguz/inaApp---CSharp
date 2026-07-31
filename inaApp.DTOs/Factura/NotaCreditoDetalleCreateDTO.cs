@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace inaApp.DTOs.Factura
 {
@@ -15,11 +16,17 @@ namespace inaApp.DTOs.Factura
         public int Cantidad { get; set; }
 
         // Campos que se llenan en el Service (desde la factura original)
+        [Column(TypeName = "decimal(18,2)")]
         public decimal PrecioUnitario { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Subtotal { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal PorcentajeImpuesto { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal MontoImpuesto { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal DescuentoAplicado { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal TotalLinea { get; set; }
         public string ProductoNombre { get; set; }
         public int CantidadOriginal { get; set; } // Para validación

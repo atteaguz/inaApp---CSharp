@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace inaApp.DTOs.Factura
 {
@@ -18,9 +19,13 @@ namespace inaApp.DTOs.Factura
         public List<NotaCreditoDetalleCreateDTO> Detalles { get; set; } = new List<NotaCreditoDetalleCreateDTO>();
 
         // Campos calculados
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Subtotal { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Descuento { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal ImpuestoTotal { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Total { get; set; }
     }
 }

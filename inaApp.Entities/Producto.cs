@@ -34,12 +34,12 @@ namespace inaApp.Entities
 
         [Required(ErrorMessage = "El porcentaje de impuesto es obligatorio")]
         [Range(0, 100, ErrorMessage = "El porcentaje de impuesto debe estar entre 0 y 100")]
-        [Column(TypeName = "decimal(5,2)")]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal PorcentajeImpuesto { get; set; }
 
         [Required(ErrorMessage = "El descuento máximo es obligatorio")]
         [Range(0, 100, ErrorMessage = "El descuento máximo debe estar entre 0 y 100")]
-        [Column(TypeName = "decimal(5,2)")]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal DescuentoMaximo { get; set; }
 
         //relacion entre Producto y Categoria - * a 1

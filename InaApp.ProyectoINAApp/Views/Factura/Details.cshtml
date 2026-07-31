@@ -15,8 +15,8 @@
             </a>
             @if (Model.Estado)
             {
-                <a asp-action="Anular" asp-route-id="@Model.Id" class="btn btn-danger">
-                    <i class="bi bi-x-circle"></i> Anular
+                <a asp-controller="NotaCredito" asp-action="Create" asp-route-facturaId="@Model.Id" class="btn btn-warning">
+                    <i class="bi bi-pencil-square"></i> Generar Nota de Crédito
                 </a>
             }
         </div>
@@ -98,6 +98,7 @@
                                 <th class="text-center">Cantidad</th>
                                 <th class="text-end">Precio Unitario</th>
                                 <th class="text-end">Subtotal</th>
+                                
                             </tr>
                         </thead>
                         <tbody>
@@ -108,6 +109,7 @@
                                     <td class="text-center">@detalle.Cantidad</td>
                                     <td class="text-end">₡@detalle.PrecioUnitario.ToString("N2")</td>
                                     <td class="text-end">₡@detalle.Subtotal.ToString("N2")</td>
+                                    
                                 </tr>
                             }
                         </tbody>
@@ -117,8 +119,12 @@
                                 <td class="text-end">₡@Model.Subtotal.ToString("N2")</td>
                             </tr>
                             <tr>
-                                <td colspan="3" class="text-end fw-bold text-success">Descuento (5%):</td>
+                                <td colspan="3" class="text-end fw-bold text-success">Descuento:</td>
                                 <td class="text-end text-success">- ₡@Model.Descuento.ToString("N2")</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold text-info">Impuesto:</td>
+                                <td class="text-end text-info">₡@Model.ImpuestoTotal.ToString("N2")</td>
                             </tr>
                             <tr>
                                 <td colspan="3" class="text-end fw-bold fs-5">Total:</td>
@@ -139,12 +145,7 @@
         <a asp-action="Index" class="btn btn-secondary">Volver a la lista</a>
     </div>
 
-    @if (Model.Estado)
-    {
-        <a asp-controller="NotaCredito" asp-action="Create" asp-route-facturaId="@Model.Id" class="btn btn-warning">
-            <i class="bi bi-pencil-square"></i> Generar Nota de Crédito
-        </a>
-    }
+
 
     <!-- seccion de notas de credito asociadas -->
     @if (Model.NotasCredito != null && Model.NotasCredito.Any())

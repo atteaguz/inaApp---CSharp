@@ -29,7 +29,8 @@ namespace inaApp.Services.Mapping
                 .ForMember(dest => dest.CategoriaNombre,
                     opt => opt.MapFrom(src => src.Categoria.Nombre))
                 .ForMember(dest => dest.CategoriaId,
-                    opt => opt.MapFrom(src => src.CategoriaId));
+                    opt => opt.MapFrom(src => src.CategoriaId))
+                .ForMember(dest => dest.DescuentoMaximo, opt => opt.MapFrom(src => src.DescuentoMaximo));
 
             CreateMap<Cliente, ClienteResponseDTO>();
             CreateMap<Categoria, CategoriaResponseDTO>();
@@ -51,7 +52,11 @@ namespace inaApp.Services.Mapping
                 .ForMember(dest => dest.ClienteNombre,
                     opt => opt.MapFrom(src => $"{src.Cliente.Nombre} {src.Cliente.PrimerApellido} {src.Cliente.SegundoApellido ?? ""}".Trim()));
 
-            CreateMap<FacturaCreateDTO, Factura>();
+            CreateMap<FacturaCreateDTO, Factura>()
+                .ForMember(dest => dest.Subtotal, opt => opt.MapFrom(src => src.Subtotal))
+                .ForMember(dest => dest.Descuento, opt => opt.MapFrom(src => src.Descuento))
+                .ForMember(dest => dest.ImpuestoTotal, opt => opt.MapFrom(src => src.ImpuestoTotal))
+                .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.Total));
 
             //FacturaDetalle
             CreateMap<FacturaDetalle, FacturaDetalleResponseDTO>()

@@ -19,10 +19,16 @@ namespace InaApp.ProyectoINAApp.Mapping
             CreateMap<ProductoResponseDTO, ProductoEditViewModel>();
 
             CreateMap<ProductoIndexViewModel, ProductoResponseDTO>();
-            CreateMap<ProductoCreateViewModel, ProductoCreateDTO>();
+            CreateMap<ProductoCreateViewModel, ProductoCreateDTO>()
+                    .ForMember(dest => dest.TipoImpuesto, opt => opt.MapFrom(src => src.TipoImpuesto))
+                    .ForMember(dest => dest.PorcentajeImpuesto, opt => opt.MapFrom(src => src.PorcentajeImpuesto))
+                    .ForMember(dest => dest.DescuentoMaximo, opt => opt.MapFrom(src => src.DescuentoMaximo))
+                    .ForMember(dest => dest.Precio, opt => opt.MapFrom(src => src.Precio));
             CreateMap<ProductoEditViewModel, ProductoUpdateDTO>()
-                .ForMember(dest => dest.CategoriaId,
-                    opt => opt.MapFrom(src => src.CategoriaId));
+                .ForMember(dest => dest.CategoriaId, opt => opt.MapFrom(src => src.CategoriaId))
+                .ForMember(dest => dest.TipoImpuesto, opt => opt.MapFrom(src => src.TipoImpuesto))
+                .ForMember(dest => dest.PorcentajeImpuesto, opt => opt.MapFrom(src => src.PorcentajeImpuesto))
+                .ForMember(dest => dest.DescuentoMaximo, opt => opt.MapFrom(src => src.DescuentoMaximo));
 
             //categoria
             CreateMap<CategoriaResponseDTO, CategoriaIndexViewModel>();

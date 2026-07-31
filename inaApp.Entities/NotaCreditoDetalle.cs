@@ -33,7 +33,7 @@ namespace inaApp.Entities
         public decimal Subtotal { get; set; }
 
         [Required]
-        [Column(TypeName = "decimal(5,2)")]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal PorcentajeImpuesto { get; set; }
 
         [Required]
@@ -41,7 +41,7 @@ namespace inaApp.Entities
         public decimal MontoImpuesto { get; set; }
 
         [Required]
-        [Column(TypeName = "decimal(5,2)")]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal DescuentoAplicado { get; set; }
 
         [Required]
