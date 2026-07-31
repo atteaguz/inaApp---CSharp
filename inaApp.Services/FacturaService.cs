@@ -105,15 +105,18 @@ namespace inaApp.Services
                     throw new DuplicadoProductoException("No se puede agregar el mismo producto dos veces");
 
                 // Procesar cada producto
-                var productos = new List<Producto>();
                 decimal subtotal = 0;
                 decimal descuentoTotal = 0;
                 decimal impuestoTotal = 0;
                 var detalles = new List<FacturaDetalle>();
+                var productosParaActualizar = new List<(int ProductoId, int Cantidad)>();
 
                 foreach (var detalleDto in dto.Detalles)
                 {
-                    var producto = await _productoRepo.ObtenerPorIdsAsync(detalleDto.ProductoId);
+                    var producto = await _context.Producto
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(p => p.Id == detalleDto.ProductoId);
+
                     if (producto == null)
                         throw new NotFoundException($"Producto con ID {detalleDto.ProductoId} no encontrado");
 
@@ -127,20 +130,20 @@ namespace inaApp.Services
                         throw new InsufficientStockException(
                             $"Stock insuficiente para '{producto.Nombre}'. Disponible: {producto.Stock}, Solicitado: {detalleDto.Cantidad}");
 
-                    //CÁLCULOS POR PRODUCTO (CON Math.Round)
+                    // CÁLCULOS POR PRODUCTO (CON Math.Round)
                     // 1. Precio unitario
                     detalleDto.PrecioUnitario = producto.Precio;
 
                     // 2. Subtotal de línea (sin descuento)
                     detalleDto.Subtotal = Math.Round(detalleDto.Cantidad * detalleDto.PrecioUnitario, 2, MidpointRounding.AwayFromZero);
 
-                    // 3. Descuento de línea (según el descuento máximo del producto)
+                    // 3. Descuento de línea
                     decimal descuentoAplicado = Math.Round(detalleDto.Subtotal * (producto.DescuentoMaximo / 100), 2, MidpointRounding.AwayFromZero);
 
                     // 4. Subtotal con descuento
                     decimal subtotalConDescuento = Math.Round(detalleDto.Subtotal - descuentoAplicado, 2, MidpointRounding.AwayFromZero);
 
-                    // 5. Impuesto de línea (sobre el subtotal con descuento)
+                    // 5. Impuesto de línea
                     detalleDto.PorcentajeImpuesto = producto.PorcentajeImpuesto;
                     detalleDto.MontoImpuesto = Math.Round(subtotalConDescuento * (producto.PorcentajeImpuesto / 100), 2, MidpointRounding.AwayFromZero);
 
@@ -170,15 +173,21 @@ namespace inaApp.Services
 
                     detalles.Add(detalle);
 
-                    // Actualizar stock (con validación de stock negativo)
-                    producto.Stock -= detalleDto.Cantidad;
-                    if (producto.Stock < 0)
-                    {
-                        throw new InvalidOperationException($"Stock insuficiente para '{producto.Nombre}'. Stock resultante: {producto.Stock}");
-                    }
-                    _context.Producto.Update(producto);
+                    productosParaActualizar.Add((producto.Id, detalleDto.Cantidad));
+                }
 
-                    productos.Add(producto);
+                //actualizar stock de productos comprados
+                foreach (var (productoId, cantidad) in productosParaActualizar)
+                {
+                    var productoToUpdate = await _context.Producto.FindAsync(productoId);
+                    if (productoToUpdate == null)
+                        throw new NotFoundException($"Producto con ID {productoId} no encontrado");
+
+                    productoToUpdate.Stock -= cantidad;
+                    if (productoToUpdate.Stock < 0)
+                    {
+                        throw new InvalidOperationException($"Stock insuficiente para el producto ID {productoId}. Stock resultante: {productoToUpdate.Stock}");
+                    }
                 }
 
                 // Redondear totales finales de la factura
@@ -186,21 +195,6 @@ namespace inaApp.Services
                 descuentoTotal = Math.Round(descuentoTotal, 2, MidpointRounding.AwayFromZero);
                 impuestoTotal = Math.Round(impuestoTotal, 2, MidpointRounding.AwayFromZero);
                 decimal totalFinal = Math.Round(subtotal - descuentoTotal + impuestoTotal, 2, MidpointRounding.AwayFromZero);
-
-                // Depuracion: Ver valores antes de guardar
-                Console.WriteLine("========== FACTURA A GUARDAR ==========");
-                Console.WriteLine($"ClienteId: {dto.ClienteId}");
-                Console.WriteLine($"Subtotal: {subtotal}");
-                Console.WriteLine($"Descuento: {descuentoTotal}");
-                Console.WriteLine($"ImpuestoTotal: {impuestoTotal}");
-                Console.WriteLine($"Total: {totalFinal}");
-                Console.WriteLine($"Detalles: {detalles.Count}");
-                foreach (var detalle in detalles)
-                {
-                    Console.WriteLine($"  ProductoId: {detalle.ProductoId}, Cantidad: {detalle.Cantidad}, Precio: {detalle.PrecioUnitario}");
-                    Console.WriteLine($"    Subtotal: {detalle.Subtotal}, Descuento: {detalle.DescuentoAplicado}, Impuesto: {detalle.MontoImpuesto}, Total: {detalle.TotalLinea}");
-                }
-                Console.WriteLine("========================================");
 
                 // Crear la factura
                 var factura = new Factura
@@ -236,7 +230,6 @@ namespace inaApp.Services
             catch (DbUpdateException ex)
             {
                 await transaction.RollbackAsync();
-                // Obtener la excepción interna completa para depurar
                 var innerEx = ex.InnerException;
                 var errorMessage = ex.Message;
                 while (innerEx != null)

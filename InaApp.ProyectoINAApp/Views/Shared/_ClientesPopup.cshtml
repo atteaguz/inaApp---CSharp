@@ -8,13 +8,8 @@
 <div class="modal-body">
     <div class="mb-3">
         <div class="input-group">
-            <input type="text" id="buscarClienteInput" class="form-control" placeholder="Buscar por nombre o cédula..." value="@ViewBag.Termino" />
-            <button class="btn btn-primary" id="btnBuscarCliente">
-                <i class="bi bi-search"></i> Buscar
-            </button>
-            <button class="btn btn-secondary" id="btnLimpiarCliente">
-                <i class="bi bi-arrow-counterclockwise"></i> Limpiar
-            </button>
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" id="buscarClienteInput" class="form-control" placeholder="Buscar por ID o nombre del cliente..." />
         </div>
     </div>
 
@@ -30,19 +25,22 @@
                     <th class="text-center">Acción</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="tablaClientesBody">
                 @if (Model != null && Model.Any())
                 {
                     foreach (var cliente in Model)
                     {
-                        <tr>
+                        <tr data-id="@cliente.IdCliente" 
+                            data-nombre="@cliente.Nombre @cliente.PrimerApellido @cliente.SegundoApellido"
+                            data-cedula="@cliente.NumeroIdentificacion"
+                            data-telefono="@cliente.Telefono"
+                            data-correo="@cliente.CorreoElectronico">
                             <td>@cliente.IdCliente</td>
                             <td>@cliente.Nombre @cliente.PrimerApellido @cliente.SegundoApellido</td>
                             <td>@cliente.NumeroIdentificacion</td>
                             <td>@cliente.Telefono</td>
                             <td>@cliente.CorreoElectronico</td>
                             <td class="text-center">
-                                <!-- USAR UNA CLASE EN VEZ DE onclick -->
                                 <button type="button" class="btn btn-success btn-sm btn-seleccionar-cliente-popup" 
                                         data-id="@cliente.IdCliente" 
                                         data-nombre="@cliente.Nombre @cliente.PrimerApellido @cliente.SegundoApellido">
@@ -61,69 +59,4 @@
             </tbody>
         </table>
     </div>
-
-    @if (ViewBag.TotalPages > 1)
-    {
-        <nav>
-            <ul class="pagination justify-content-center">
-                @for (int i = 1; i <= ViewBag.TotalPages; i++)
-                {
-                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                        <a class="page-link page-link-cliente" href="#" data-page="@i">@i</a>
-                    </li>
-                }
-            </ul>
-        </nav>
-    }
 </div>
-
-<script>
-    console.log('Script de _ClientesPopup.cshtml cargado');
-
-    // Buscar clientes
-    document.getElementById('btnBuscarCliente')?.addEventListener('click', function() {
-        var termino = document.getElementById('buscarClienteInput').value;
-        console.log('Buscando clientes:', { termino: termino });
-        cargarPaginaClientesPopup(1, termino);
-    });
-
-    // Limpiar búsqueda
-    document.getElementById('btnLimpiarCliente')?.addEventListener('click', function() {
-        document.getElementById('buscarClienteInput').value = '';
-        console.log('Limpiando búsqueda de clientes');
-        cargarPaginaClientesPopup(1, '');
-    });
-
-    // Enter en input
-    document.getElementById('buscarClienteInput')?.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            var termino = document.getElementById('buscarClienteInput').value;
-            console.log('Enter en búsqueda de clientes:', { termino: termino });
-            cargarPaginaClientesPopup(1, termino);
-        }
-    });
-
-    // Paginación
-    document.querySelectorAll('.page-link-cliente').forEach(function(el) {
-        el.addEventListener('click', function(e) {
-            e.preventDefault();
-            var page = this.getAttribute('data-page');
-            var termino = document.getElementById('buscarClienteInput').value || '';
-            console.log('Paginación clientes:', { page: page, termino: termino });
-            cargarPaginaClientesPopup(page, termino);
-        });
-    });
-
-    function cargarPaginaClientesPopup(page, termino) {
-        console.log('Cargando página de clientes:', { page: page, termino: termino });
-        fetch(`@Url.Action("BuscarClientes", "Factura")?termino=${encodeURIComponent(termino)}&page=${page}`)
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('clientesPopupContent').innerHTML = html;
-                console.log('Popup de clientes actualizado');
-            })
-            .catch(error => {
-                console.error('Error al cargar clientes:', error);
-            });
-    }
-</script>

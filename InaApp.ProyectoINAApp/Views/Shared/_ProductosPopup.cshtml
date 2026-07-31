@@ -6,32 +6,10 @@
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body">
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <div class="input-group">
-                <input type="text" id="buscarProductoInput" class="form-control" placeholder="Buscar por nombre o ID..." value="@ViewBag.Termino" />
-                <button class="btn btn-primary" id="btnBuscarProducto">
-                    <i class="bi bi-search"></i> Buscar
-                </button>
-                <button class="btn btn-secondary" id="btnLimpiarProducto">
-                    <i class="bi bi-arrow-counterclockwise"></i> Limpiar
-                </button>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <select id="filtroCategoria" class="form-select">
-                <option value="0">Todas las categorías</option>
-                @if (ViewBag.CategoriasList != null)
-                {
-                    foreach (var categoria in ViewBag.CategoriasList)
-                    {
-                        <option value="@categoria.Value" selected="@(categoria.Selected ? "selected" : null)">@categoria.Text</option>
-                    }
-                }
-            </select>
-        </div>
-        <div class="col-md-2 text-end">
-            <span class="badge bg-info">Stock disponible</span>
+    <div class="mb-3">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" id="buscarProductoInput" class="form-control" placeholder="Buscar por ID o nombre del producto..." />
         </div>
     </div>
 
@@ -50,12 +28,13 @@
                     <th class="text-center">Acción</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="tablaProductosBody">
                 @if (Model != null && Model.Any())
                 {
                     foreach (var producto in Model)
                     {
-                        <tr>
+                        <tr data-id="@producto.Id" 
+                            data-nombre="@producto.Nombre">
                             <td>@producto.Id</td>
                             <td>@producto.Nombre</td>
                             <td>@producto.CategoriaNombre</td>
@@ -64,17 +43,16 @@
                             <td>@producto.TipoImpuestoNombre (@producto.PorcentajeImpuesto%)</td>
                             <td class="text-center">@producto.DescuentoMaximo%</td>
                             <td class="text-center">
-                                <input type="number" class="form-control form-control-sm text-center cantidad-producto"
+                                <input type="number" class="form-control form-control-sm text-center cantidad-producto" 
                                        data-id="@producto.Id" value="1" min="1" max="@producto.Stock" style="width:80px;display:inline-block;" />
                             </td>
                             <td class="text-center">
-                                <!-- USAR UNA CLASE EN VEZ DE onclick -->
-                                <button type="button" class="btn btn-success btn-sm btn-agregar-producto-popup"
-                                        data-id="@producto.Id"
-                                        data-nombre="@producto.Nombre"
-                                        data-precio="@producto.Precio.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                        data-stock="@producto.Stock"
-                                        data-porcentaje-impuesto="@producto.PorcentajeImpuesto"
+                                <button type="button" class="btn btn-success btn-sm btn-agregar-producto-popup" 
+                                        data-id="@producto.Id" 
+                                        data-nombre="@producto.Nombre" 
+                                        data-precio="@producto.Precio.ToString(System.Globalization.CultureInfo.InvariantCulture)" 
+                                        data-stock="@producto.Stock" 
+                                        data-porcentaje-impuesto="@producto.PorcentajeImpuesto" 
                                         data-descuento-maximo="@producto.DescuentoMaximo">
                                     <i class="bi bi-plus-circle"></i> Agregar
                                 </button>
@@ -91,82 +69,4 @@
             </tbody>
         </table>
     </div>
-
-    @if (ViewBag.TotalPages > 1)
-    {
-        <nav>
-            <ul class="pagination justify-content-center">
-                @for (int i = 1; i <= ViewBag.TotalPages; i++)
-                {
-                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                        <a class="page-link page-link-producto" href="#" data-page="@i">@i</a>
-                    </li>
-                }
-            </ul>
-        </nav>
-    }
 </div>
-
-<script>
-    console.log('Script de _ProductosPopup.cshtml cargado');
-
-    // FUNCIONES PARA POPUP DE PRODUCTOS
-    // Buscar productos - evento click
-    document.getElementById('btnBuscarProducto')?.addEventListener('click', function() {
-        var termino = document.getElementById('buscarProductoInput').value;
-        var categoria = document.getElementById('filtroCategoria').value;
-        console.log('Buscando productos:', { termino: termino, categoria: categoria });
-        cargarPaginaProductosPopup(1, termino, categoria);
-    });
-
-    // Limpiar búsqueda
-    document.getElementById('btnLimpiarProducto')?.addEventListener('click', function() {
-        document.getElementById('buscarProductoInput').value = '';
-        document.getElementById('filtroCategoria').value = '0';
-        console.log('Limpiando búsqueda de productos');
-        cargarPaginaProductosPopup(1, '', '0');
-    });
-
-    // Enter en input
-    document.getElementById('buscarProductoInput')?.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            var termino = document.getElementById('buscarProductoInput').value;
-            var categoria = document.getElementById('filtroCategoria').value;
-            console.log('Enter en búsqueda de productos:', { termino: termino, categoria: categoria });
-            cargarPaginaProductosPopup(1, termino, categoria);
-        }
-    });
-
-    // Cambio en filtro de categoría
-    document.getElementById('filtroCategoria')?.addEventListener('change', function() {
-        var termino = document.getElementById('buscarProductoInput').value || '';
-        var categoria = this.value || '0';
-        console.log('Cambio de categoría:', { termino: termino, categoria: categoria });
-        cargarPaginaProductosPopup(1, termino, categoria);
-    });
-
-    // Paginación
-    document.querySelectorAll('.page-link-producto').forEach(function(el) {
-        el.addEventListener('click', function(e) {
-            e.preventDefault();
-            var page = this.getAttribute('data-page');
-            var termino = document.getElementById('buscarProductoInput').value || '';
-            var categoria = document.getElementById('filtroCategoria').value || '0';
-            console.log('Paginación productos:', { page: page, termino: termino, categoria: categoria });
-            cargarPaginaProductosPopup(page, termino, categoria);
-        });
-    });
-
-    function cargarPaginaProductosPopup(page, termino, categoria) {
-        console.log('Cargando página de productos:', { page: page, termino: termino, categoria: categoria });
-        fetch(`@Url.Action("BuscarProductos", "Factura")?termino=${encodeURIComponent(termino)}&categoriaId=${categoria}&page=${page}`)
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('productosPopupContent').innerHTML = html;
-                console.log('Popup de productos actualizado');
-            })
-            .catch(error => {
-                console.error('Error al cargar productos:', error);
-            });
-    }
-</script>

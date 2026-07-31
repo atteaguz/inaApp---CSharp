@@ -3,6 +3,7 @@ using inaApp.Common.Exceptions;
 using inaApp.DTOs.Cliente;
 using inaApp.DTOs.Factura;
 using inaApp.DTOs.Producto;
+using inaApp.Entities;
 using inaApp.Services;
 using InaApp.ProyectoINAApp.Models.Factura;
 using Microsoft.AspNetCore.Mvc;
@@ -344,31 +345,34 @@ namespace InaApp.ProyectoINAApp.Controllers
 
         // GET: FacturaController/BuscarClientes (Popup)
         [HttpGet]
-        public async Task<IActionResult> BuscarClientes(string termino = "", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> BuscarClientes(string termino)
         {
             try
             {
+                // Obtener todos los clientes activos
                 var response = await _clienteService.ObtenerTodosAsync();
                 var clientes = response.Data ?? new List<ClienteResponseDTO>();
 
+                // FILTRAR EN MEMORIA POR ID O NOMBRE
                 if (!string.IsNullOrWhiteSpace(termino))
                 {
-                    clientes = clientes.Where(c =>
-                        c.NumeroIdentificacion.Contains(termino, StringComparison.OrdinalIgnoreCase) ||
-                        $"{c.Nombre} {c.PrimerApellido} {c.SegundoApellido ?? ""}".Contains(termino, StringComparison.OrdinalIgnoreCase)
+                    var terminoLower = termino.Trim().ToLower();
+                    var esNumero = int.TryParse(termino.Trim(), out int idBuscado);
+
+                    var clientesFiltrados = clientes.Where(c =>
+                        c.IdCliente.ToString().Contains(termino.Trim()) ||
+                        c.Nombre.ToLower().Contains(terminoLower) ||
+                        c.PrimerApellido.ToLower().Contains(terminoLower) ||
+                        (c.SegundoApellido != null && c.SegundoApellido.ToLower().Contains(terminoLower)) ||
+                        c.NumeroIdentificacion.ToLower().Contains(terminoLower)
                     ).ToList();
+
+                    return PartialView("_ClientesPopup", clientesFiltrados);
                 }
 
-                var total = clientes.Count;
-                var items = clientes.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-
-                ViewBag.TotalPages = (int)Math.Ceiling((double)total / pageSize);
-                ViewBag.CurrentPage = page;
-                ViewBag.Termino = termino;
-
-                return PartialView("_ClientesPopup", items);
+                return PartialView("_ClientesPopup", clientes);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return PartialView("_ClientesPopup", new List<ClienteResponseDTO>());
             }
@@ -376,47 +380,31 @@ namespace InaApp.ProyectoINAApp.Controllers
 
         // GET: FacturaController/BuscarProductos (Popup)
         [HttpGet]
-        public async Task<IActionResult> BuscarProductos(string termino = "", int categoriaId = 0, int page = 1, int pageSize = 10)
+        public async Task<IActionResult> BuscarProductos(string termino)
         {
             try
             {
+                // Obtener todos los productos activos
                 var response = await _productoService.ObtenerTodosAsync();
                 var productos = response.Data ?? new List<ProductoResponseDTO>();
 
-                productos = productos.Where(p => p.Estado && p.Stock > 0).ToList();
-
+                // FILTRAR EN MEMORIA POR ID O NOMBRE
                 if (!string.IsNullOrWhiteSpace(termino))
                 {
-                    productos = productos.Where(p =>
-                        p.Id.ToString().Contains(termino) ||
-                        p.Nombre.Contains(termino, StringComparison.OrdinalIgnoreCase)
+                    var terminoLower = termino.Trim().ToLower();
+                    var esNumero = int.TryParse(termino.Trim(), out int idBuscado);
+
+                    var productosFiltrados = productos.Where(p =>
+                        p.Id.ToString().Contains(termino.Trim()) ||
+                        p.Nombre.ToLower().Contains(terminoLower)
                     ).ToList();
+
+                    return PartialView("_ProductosPopup", productosFiltrados);
                 }
 
-                if (categoriaId > 0)
-                {
-                    productos = productos.Where(p => p.CategoriaId == categoriaId).ToList();
-                }
-
-                var total = productos.Count;
-                var items = productos.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-
-                ViewBag.TotalPages = (int)Math.Ceiling((double)total / pageSize);
-                ViewBag.CurrentPage = page;
-                ViewBag.Termino = termino;
-                ViewBag.CategoriaId = categoriaId;
-
-                var categoriasResponse = await _categoriaService.ObtenerTodosAsync();
-                ViewBag.CategoriasList = categoriasResponse.Data?.Select(c => new SelectListItem
-                {
-                    Value = c.Id.ToString(),
-                    Text = c.Nombre,
-                    Selected = c.Id == categoriaId
-                }).ToList() ?? new List<SelectListItem>();
-
-                return PartialView("_ProductosPopup", items);
+                return PartialView("_ProductosPopup", productos);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return PartialView("_ProductosPopup", new List<ProductoResponseDTO>());
             }

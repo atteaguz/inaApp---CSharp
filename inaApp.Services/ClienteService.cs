@@ -190,15 +190,16 @@ namespace inaApp.Services
         {
             var listaClientes = await _clienteRepo.ObtenerTodosAsync();
 
-            //validar que la lista no este vacia
-            if (!listaClientes.Any())
+            if (listaClientes == null || !listaClientes.Any())
             {
                 throw new NotFoundException("No se encontraron clientes");
             }
 
+            var result = _mapper.Map<List<ClienteResponseDTO>>(listaClientes);
+
             return new Response<List<ClienteResponseDTO>>
             {
-                Data = _mapper.Map<List<ClienteResponseDTO>>(listaClientes),
+                Data = result,
                 Message = "Clientes Obtenidos",
                 Success = true
             };
