@@ -32,7 +32,6 @@
                     <strong>Datos de la Factura</strong>
                 </div>
                 <div class="card-body">
-                    <!-- UN SOLO FORMULARIO -->
                     <form asp-action="Create" method="post" id="facturaForm">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
@@ -79,7 +78,6 @@
                             </div>
                         </div>
 
-                        <!-- Campos ocultos para los detalles -->
                         @for (int i = 0; i < Model.Detalles.Count; i++)
                         {
                             <input type="hidden" name="Detalles[@i].ProductoId" value="@Model.Detalles[i].ProductoId" />
@@ -93,7 +91,6 @@
                             <input type="hidden" name="Detalles[@i].TotalLinea" value="@Model.Detalles[i].TotalLinea" />
                         }
 
-                        <!-- BOTÓN DE GUARDAR DENTRO DEL MISMO FORMULARIO -->
                         <div class="mt-3">
                             <button type="button" class="btn btn-success btn-lg" id="btnGuardarFactura">
                                 <i class="bi bi-check-circle"></i> Guardar Factura
@@ -111,7 +108,6 @@
                     <strong>Detalle de la Factura</strong>
                 </div>
                 <div class="card-body">
-                    <!-- TABLA SIEMPRE VISIBLE -->
                     <div class="table-responsive" id="contenedorTabla">
                         <table class="table table-sm table-bordered" id="detalleTable">
                             <thead class="table-dark">
@@ -170,7 +166,6 @@
                         </table>
                     </div>
 
-                    <!-- Mensaje de "No hay productos" (se oculta automáticamente) -->
                     @if (!Model.TieneDetalles)
                     {
                         <div id="mensajeSinProductos" class="text-center text-muted py-4">
@@ -203,7 +198,7 @@
     </div>
 </div>
 
-<!--  MODALES DE POPUPS -->
+<!-- MODALES DE POPUPS -->
 <div class="modal fade" id="clientesModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content" id="clientesPopupContent">
@@ -246,6 +241,8 @@
                 .then(response => response.text())
                 .then(html => {
                     document.getElementById('clientesPopupContent').innerHTML = html;
+                    // Inicializar búsqueda después de cargar
+                    setTimeout(inicializarBusquedaClientes, 100);
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -270,6 +267,8 @@
                 .then(response => response.text())
                 .then(html => {
                     document.getElementById('productosPopupContent').innerHTML = html;
+                    // Inicializar búsqueda después de cargar
+                    setTimeout(inicializarBusquedaProductos, 100);
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -281,8 +280,6 @@
         // ============================================================
 
         window.agregarProductoDetalle = function(productoId, nombre, cantidad, precio, stock, porcentajeImpuesto, descuentoMaximo) {
-                productoId, nombre, cantidad, precio, stock, porcentajeImpuesto, descuentoMaximo
-            });
 
             // ============================================================
             // CÁLCULOS POR PRODUCTO
@@ -302,7 +299,7 @@
             var tbody = document.getElementById('detalleBody');
 
             if (!form || !tbody) {
-                console.error('❌ Error: No se encontró el formulario o la tabla');
+                console.error('Error: No se encontró el formulario o la tabla');
                 alert('Error: No se encontró el formulario de la factura');
                 return;
             }
@@ -327,19 +324,19 @@
             row.id = 'fila-' + productoId;
 
             row.innerHTML = `
-                        <td>${nombre}</td>
-                        <td class="text-center">${cantidad}</td>
-                        <td class="text-end">₡${precio.toFixed(2)}</td>
-                        <td class="text-end">₡${subtotal.toFixed(2)}</td>
-                        <td class="text-end">₡${descuentoLinea.toFixed(2)}</td>
-                        <td class="text-end">₡${impuestoLinea.toFixed(2)}</td>
-                        <td class="text-end">₡${totalLinea.toFixed(2)}</td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-danger btn-sm btn-remove-product" data-id="${productoId}">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    `;
+                                <td>${nombre}</td>
+                                <td class="text-center">${cantidad}</td>
+                                <td class="text-end">₡${precio.toFixed(2)}</td>
+                                <td class="text-end">₡${subtotal.toFixed(2)}</td>
+                                <td class="text-end">₡${descuentoLinea.toFixed(2)}</td>
+                                <td class="text-end">₡${impuestoLinea.toFixed(2)}</td>
+                                <td class="text-end">₡${totalLinea.toFixed(2)}</td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-danger btn-sm btn-remove-product" data-id="${productoId}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            `;
 
             tbody.appendChild(row);
 
@@ -431,9 +428,9 @@
             alertDiv.className = 'alert alert-' + tipo + ' alert-dismissible fade show';
             alertDiv.role = 'alert';
             alertDiv.innerHTML = `
-                        ${mensaje}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    `;
+                                ${mensaje}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            `;
 
             var container = document.querySelector('.container.mt-4');
             container.insertBefore(alertDiv, container.firstChild);
@@ -461,27 +458,24 @@
         };
 
         // ============================================================
-        // 🛡VALIDACIÓN ANTES DE GUARDAR (CON UN SOLO FORMULARIO)
+        // VALIDACIÓN ANTES DE GUARDAR
         // ============================================================
 
         document.getElementById('btnGuardarFactura')?.addEventListener('click', function(e) {
 
             var clienteId = document.getElementById('ClienteId').value;
 
-            // Verificar cliente
             if (!clienteId || clienteId === '0' || clienteId === '') {
-                alert('⚠️ Debe seleccionar un cliente antes de guardar la factura');
+                alert('Debe seleccionar un cliente antes de guardar la factura');
                 return;
             }
 
-            // Verificar que haya al menos un producto
             var filas = document.querySelectorAll('#detalleBody tr');
             if (filas.length === 0) {
-                alert('⚠️ Debe agregar al menos un producto antes de guardar la factura');
+                alert('Debe agregar al menos un producto antes de guardar la factura');
                 return;
             }
 
-            // Enviar el formulario principal (que ya tiene todos los campos)
             document.getElementById('facturaForm').submit();
         });
 
@@ -505,6 +499,7 @@
         document.addEventListener('click', function(e) {
             var btn = e.target.closest('.btn-agregar-producto-popup');
             if (btn) {
+
                 var productoId = parseInt(btn.getAttribute('data-id'));
                 var nombre = btn.getAttribute('data-nombre');
                 var precio = parseFloat(btn.getAttribute('data-precio'));
@@ -529,6 +524,7 @@
                 if (typeof window.agregarProductoDetalle === 'function') {
                     window.agregarProductoDetalle(productoId, nombre, cantidad, precio, stock, porcentajeImpuesto, descuentoMaximo);
                 } else {
+                    console.error('window.agregarProductoDetalle NO está definida');
                     alert('Error: La función agregarProductoDetalle no está disponible');
                 }
             }
@@ -541,12 +537,14 @@
         document.addEventListener('click', function(e) {
             var btn = e.target.closest('.btn-seleccionar-cliente-popup');
             if (btn) {
+
                 var id = parseInt(btn.getAttribute('data-id'));
                 var nombre = btn.getAttribute('data-nombre');
 
                 if (typeof window.seleccionarCliente === 'function') {
                     window.seleccionarCliente(id, nombre);
                 } else {
+                    console.error('window.seleccionarCliente NO está definida');
                     alert('Error: La función seleccionarCliente no está disponible');
                 }
             }
@@ -560,13 +558,14 @@
         function inicializarBusquedaClientes() {
             var inputBusqueda = document.getElementById('buscarClienteInput');
             if (!inputBusqueda) {
+                console.log('⏳ Esperando a que el input de búsqueda esté disponible...');
                 setTimeout(inicializarBusquedaClientes, 200);
                 return;
             }
 
             var tbody = document.getElementById('tablaClientesBody');
             if (!tbody) {
-                console.warn('⚠️ No se encontró la tabla de clientes');
+                console.warn('No se encontró la tabla de clientes');
                 return;
             }
 
@@ -595,7 +594,7 @@
                     var cedula = fila.getAttribute('data-cedula') || '';
 
                     // Verificar si coincide con ID, nombre o cédula
-                    var coincide = 
+                    var coincide =
                         id.includes(terminoLower) ||
                         nombre.toLowerCase().includes(terminoLower) ||
                         cedula.toLowerCase().includes(terminoLower);
@@ -668,59 +667,51 @@
         // BÚSQUEDA EN TIEMPO REAL PARA PRODUCTOS (POPUP)
         // ============================================================
 
-        // Función para inicializar la búsqueda de productos en el popup
         function inicializarBusquedaProductos() {
+
             var inputBusqueda = document.getElementById('buscarProductoInput');
             if (!inputBusqueda) {
-                setTimeout(inicializarBusquedaProductos, 200);
+                console.warn('No se encontró el input de búsqueda de productos');
                 return;
             }
 
             var tbody = document.getElementById('tablaProductosBody');
             if (!tbody) {
-                console.warn('⚠️ No se encontró la tabla de productos');
+                console.warn('No se encontró la tabla de productos');
                 return;
             }
 
             var filas = tbody.querySelectorAll('tr');
 
-            function filtrarProductos(termino) {
-                var terminoLower = termino.trim().toLowerCase();
+            function filtrarProductos() {
+                var termino = inputBusqueda.value.trim().toLowerCase();
                 var encontrados = 0;
 
                 filas.forEach(function(fila) {
-                    // Si la fila es el mensaje de "No se encontraron productos", ignorarla
                     if (fila.querySelector('td[colspan]')) {
                         return;
                     }
 
-                    // Si no hay término, mostrar todo
-                    if (!terminoLower) {
-                        fila.style.display = '';
-                        encontrados++;
-                        return;
-                    }
-
-                    // Obtener datos de la fila
                     var id = fila.getAttribute('data-id') || '';
                     var nombre = fila.getAttribute('data-nombre') || '';
 
-                    // Verificar si coincide con ID o nombre
-                    var coincide = 
-                        id.includes(terminoLower) ||
-                        nombre.toLowerCase().includes(terminoLower);
+                    var coincide = true;
+                    if (termino) {
+                        coincide =
+                            id.includes(termino) ||
+                            nombre.toLowerCase().includes(termino);
+                    }
 
                     fila.style.display = coincide ? '' : 'none';
                     if (coincide) encontrados++;
                 });
 
-                // Mostrar mensaje si no hay resultados
                 var mensajeExistente = tbody.querySelector('.mensaje-sin-resultados');
-                if (encontrados === 0 && terminoLower) {
+                if (encontrados === 0 && termino) {
                     if (!mensajeExistente) {
                         var filaMensaje = document.createElement('tr');
                         filaMensaje.className = 'mensaje-sin-resultados';
-                        filaMensaje.innerHTML = `<td colspan="6" class="text-center">No se encontraron productos.</td>`;
+                        filaMensaje.innerHTML = `<td colspan="9" class="text-center">No se encontraron productos.</td>`;
                         tbody.appendChild(filaMensaje);
                     }
                 } else {
@@ -730,48 +721,43 @@
                 }
             }
 
-            // Evento: al escribir en el input (con debounce)
+            // Eliminar listeners antiguos
+            var nuevoInput = inputBusqueda.cloneNode(true);
+            inputBusqueda.parentNode.replaceChild(nuevoInput, inputBusqueda);
+            inputBusqueda = nuevoInput;
+
             var timeoutId = null;
             inputBusqueda.addEventListener('input', function(e) {
-                var termino = this.value;
-
                 if (timeoutId) {
                     clearTimeout(timeoutId);
                 }
-
-                timeoutId = setTimeout(function() {
-                    filtrarProductos(termino);
-                }, 200);
+                timeoutId = setTimeout(filtrarProductos, 200);
             });
 
-            // Evento: al presionar Enter
             inputBusqueda.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     if (timeoutId) {
                         clearTimeout(timeoutId);
                         timeoutId = null;
                     }
-                    filtrarProductos(this.value);
+                    filtrarProductos();
                 }
             });
-        }
 
-        // Observar cambios en el contenido del popup de productos
-        var observerClientes = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'childList') {
-                    var input = document.getElementById('buscarProductoInput');
-                    if (input) {
-                        inicializarBusquedaProductos();
-                    }
-                }
-            });
-        });
+            filtrarProductos();
 
-        // Observar el contenedor del popup de productos
-        var popupContent = document.getElementById('productosPopupContent');
-        if (popupContent) {
-            observerClientes.observe(popupContent, { childList: true, subtree: true });
+            // Obervar cambios en el contenido del popup de productos
+            var observerProductos = new MutationObserver(function(mutations) {
+                        mutations.forEach(function(mutation) {
+                            if (mutation.type === 'childList') {
+                                var input = document.getElementById('buscarProductoInput');
+                                if (input) {
+                                    setTimeout(inicializarBusquedaProductos, 100);
+                                }
+                            }
+                        });
+                    });
+
         }
     </script>
 }

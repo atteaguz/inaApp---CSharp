@@ -135,7 +135,6 @@
 
         // ACTUALIZAR CAMPOS OCULTOS ANTES DE ENVIAR EL FORMULARIO
         document.getElementById('notaForm').addEventListener('submit', function(e) {
-            console.log('🛡️ Preparando envío del formulario...');
 
             var checkboxes = document.querySelectorAll('.chk-producto');
             var cantidades = document.querySelectorAll('.cant-acreditar');
@@ -145,7 +144,6 @@
                 var hiddenSeleccionado = document.getElementById(`hiddenSeleccionado_${index}`);
                 if (hiddenSeleccionado) {
                     hiddenSeleccionado.value = cb.checked ? 'true' : 'false';
-                    console.log(`  Detalles[${index}].Seleccionado = ${hiddenSeleccionado.value}`);
                 } else {
                     console.warn(`No se encontró hiddenSeleccionado_${index}`);
                 }
@@ -155,7 +153,6 @@
                 var hiddenCantidad = document.getElementById(`hiddenCantidad_${index}`);
                 if (hiddenCantidad) {
                     hiddenCantidad.value = input.value;
-                    console.log(`  Detalles[${index}].CantidadAcreditar = ${hiddenCantidad.value}`);
                 } else {
                     console.warn(`No se encontró hiddenCantidad_${index}`);
                 }
@@ -172,8 +169,6 @@
                 alert('Debe seleccionar al menos un producto para acreditar');
                 return false;
             }
-
-            console.log('Formulario enviado');
             return true;
         });
     </script>

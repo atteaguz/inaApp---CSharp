@@ -108,10 +108,8 @@ namespace inaApp.Services
                 decimal impuestoTotal = 0;
                 var detallesNota = new List<NotaCreditoDetalle>();
 
-                Console.WriteLine("========== NOTA DE CRÉDITO - DETALLES RECIBIDOS ==========");
-                Console.WriteLine($"FacturaOriginalId: {dto.FacturaOriginalId}");
-                Console.WriteLine($"Motivo: {dto.Motivo}");
-                Console.WriteLine($"Cantidad de detalles: {dto.Detalles.Count}");
+                // Diccionario para mantener productos ya actualizados (evita duplicados)
+                var productosActualizados = new Dictionary<int, Producto>();
 
                 foreach (var detalleDto in dto.Detalles)
                 {
@@ -130,10 +128,32 @@ namespace inaApp.Services
                     if (detalleDto.Cantidad <= 0)
                         throw new InvalidOperationException("La cantidad debe ser mayor a 0");
 
-                    // Obtener el producto
-                    var producto = await _productoRepo.ObtenerPorIdsAsync(detalleOriginal.ProductoId);
+                    // Obtener el producto que ya viene en el detalle original (evita duplicados)
+                    var producto = detalleOriginal.Producto;
+
+                    // Si el producto es null (no se cargó en la consulta), obtenerlo separadamente
                     if (producto == null)
-                        throw new NotFoundException($"Producto con ID {detalleOriginal.ProductoId} no encontrado");
+                    {
+                        producto = await _context.Producto.FindAsync(detalleOriginal.ProductoId);
+                        if (producto == null)
+                            throw new NotFoundException($"Producto con ID {detalleOriginal.ProductoId} no encontrado");
+                    }
+
+                    // Verificar si este producto ya fue actualizado en esta misma nota
+                    if (productosActualizados.ContainsKey(producto.Id))
+                    {
+                        // Usar el producto ya actualizado
+                        producto = productosActualizados[producto.Id];
+                    }
+                    else
+                    {
+                        // Devolucion de stock
+                        producto.Stock += detalleDto.Cantidad;
+                        productosActualizados[producto.Id] = producto;
+
+                        // Marcar como modificado para que EF lo actualice
+                        _context.Entry(producto).State = EntityState.Modified;
+                    }
 
                     // Copiar datos del detalle original
                     detalleDto.ProductoId = detalleOriginal.ProductoId;
@@ -145,15 +165,6 @@ namespace inaApp.Services
                     detalleDto.TotalLinea = detalleDto.Subtotal - detalleDto.DescuentoAplicado + detalleDto.MontoImpuesto;
                     detalleDto.ProductoNombre = producto.Nombre;
                     detalleDto.CantidadOriginal = detalleOriginal.Cantidad;
-
-                    Console.WriteLine($"  Producto: {detalleDto.ProductoNombre}");
-                    Console.WriteLine($"    Cantidad Original: {detalleDto.CantidadOriginal}, Cantidad Acreditar: {detalleDto.Cantidad}");
-                    Console.WriteLine($"    PrecioUnitario: {detalleDto.PrecioUnitario}");
-                    Console.WriteLine($"    Subtotal: {detalleDto.Subtotal}");
-                    Console.WriteLine($"    PorcentajeImpuesto: {detalleDto.PorcentajeImpuesto}");
-                    Console.WriteLine($"    MontoImpuesto: {detalleDto.MontoImpuesto}");
-                    Console.WriteLine($"    DescuentoAplicado: {detalleDto.DescuentoAplicado}");
-                    Console.WriteLine($"    TotalLinea: {detalleDto.TotalLinea}");
 
                     // Sumar a totales
                     subtotal += detalleDto.Subtotal;
@@ -179,13 +190,6 @@ namespace inaApp.Services
 
                 // 5. Calcular totales de la nota de crédito
                 decimal total = subtotal - descuentoTotal + impuestoTotal;
-
-                Console.WriteLine("========== TOTALES DE LA NOTA DE CRÉDITO ==========");
-                Console.WriteLine($"Subtotal: {subtotal}");
-                Console.WriteLine($"DescuentoTotal: {descuentoTotal}");
-                Console.WriteLine($"ImpuestoTotal: {impuestoTotal}");
-                Console.WriteLine($"Total: {total}");
-                Console.WriteLine("====================================================");
 
                 // 6. Crear la nota de crédito
                 var notaCredito = new NotaCredito
@@ -254,7 +258,7 @@ namespace inaApp.Services
                 return new Response<NotaCreditoResponseDTO>
                 {
                     Data = responseDTO,
-                    Message = $"Nota de crédito #{notaCredito.Id} creada exitosamente. Total acreditable: ₡{total:N2}",
+                    Message = $"Nota de crédito #{notaCredito.Id} creada exitosamente. Stock actualizado. Total acreditable: ₡{total:N2}",
                     Success = true
                 };
             }
