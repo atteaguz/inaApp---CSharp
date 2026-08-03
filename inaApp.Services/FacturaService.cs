@@ -130,7 +130,7 @@ namespace inaApp.Services
                         throw new InsufficientStockException(
                             $"Stock insuficiente para '{producto.Nombre}'. Disponible: {producto.Stock}, Solicitado: {detalleDto.Cantidad}");
 
-                    // CÁLCULOS POR PRODUCTO (CON Math.Round)
+                    // Calculos por productos
                     // 1. Precio unitario
                     detalleDto.PrecioUnitario = producto.Precio;
 

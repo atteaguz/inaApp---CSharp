@@ -157,11 +157,6 @@ namespace InaApp.ProyectoINAApp.Controllers
         {
             try
             {
-                // Para depurar
-                Console.WriteLine($"FacturaOriginalId: {viewModel.FacturaOriginalId}");
-                Console.WriteLine($"Motivo: {viewModel.Motivo}");
-                Console.WriteLine($"Detalles Count: {viewModel.Detalles?.Count ?? 0}");
-
                 // Si no hay detalles, cargarlos desde la factura
                 if (viewModel.Detalles == null || !viewModel.Detalles.Any())
                 {
